@@ -1,0 +1,62 @@
+frameworkVersion: '3'
+
+service: prototype-oauth-client
+
+plugins:
+  - serverless-esbuild
+  - serverless-offline
+
+custom:
+  esbuild:
+    target: node16
+    sourcemap: true
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  region: ap-southeast-2
+  lambdaHashingVersion: 20201221
+  environment:
+    AWS_BUCKET: !Ref Bucket
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+            - s3:PutObject
+            - s3:DeleteObject
+          Resource:
+            - !Join
+              - /
+              - - !GetAtt
+                  - Bucket
+                  - Arn
+                - v2
+                - cdn
+                - '*'
+
+package:
+  individually: true
+
+functions:
+  handleInstallation:
+    handler: src/handle-installation.handleInstallationRequest
+    events:
+      - httpApi:
+          method: GET
+          path: /install/agriwebb
+
+  handleCallback:
+    handler: src/handle-callback.handleCallbackRequest
+    events:
+      - httpApi:
+          method: GET
+          path: /callback/agriwebb
+
+resources:
+  Resources:
+    Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: aw-playground-${self:service}
