@@ -1,7 +1,10 @@
-import { type APIGatewayProxyHandlerV2, type APIGatewayProxyStructuredResultV2 } from 'aws-lambda'
+import { type APIGatewayProxyHandler, type APIGatewayProxyResult } from 'aws-lambda'
 import 'isomorphic-fetch'
-import { CLIENT_ID, CLIENT_SECRET, OAUTH_SERVER_TOKEN, REDIRECT_URI } from './environment.js'
-import { validateState } from './state.js'
+import { CLIENT_ID, CLIENT_SECRET, OAUTH_SERVER_TOKEN_URL, REDIRECT_URI } from './environment.js'
+import { logger } from './logger.js'
+import { getSignatureCookie, verifyState } from './state-manager.js'
+
+const log = logger('handle-callback')
 
 const getAccessToken = async (code: string): Promise<string> => {
   const searchParams = new URLSearchParams()
@@ -11,7 +14,7 @@ const getAccessToken = async (code: string): Promise<string> => {
   searchParams.set('redirect_uri', REDIRECT_URI)
   searchParams.set('client_id', CLIENT_ID)
 
-  const response = await fetch(OAUTH_SERVER_TOKEN, {
+  const response = await fetch(OAUTH_SERVER_TOKEN_URL, {
     method: 'POST',
     headers: {
       Authorization: `Basic ${Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64')}`,
@@ -19,18 +22,41 @@ const getAccessToken = async (code: string): Promise<string> => {
     },
     body: searchParams.toString(),
   })
+
+  if (!response.ok) {
+    throw new Error(`${response.status} ${response.statusText}`)
+  }
+
   const { access_token, token_type, expires_in, refresh_token } = await response.json()
 
   return `${token_type} ${access_token}`
 }
 
-const getSuccessCallback = async (accessToken: string) => {
-  console.log(accessToken)
-}
+export const handleSuccessCallback = async (code: string): Promise<string> => {
+  return 'https://portal-staging.agriwebb.com/accounts/integrations'
 
-export const handleSuccessCallback = async (code: string): Promise<void> => {
+  log('exchanging code for access token. code: "%s"', code)
+
   const accessToken = await getAccessToken(code)
-  await getSuccessCallback(accessToken)
+
+  log('access token: "%s"', accessToken)
+
+  const response = await fetch('https://api.agriwebb.com/v2/integration-complete', {
+    method: 'POST',
+    headers: {
+      Authorization: accessToken,
+      'Content-Type': 'application/json; charset=utf-8',
+    },
+    body: JSON.stringify({}, null, 2),
+  })
+
+  if (!response.ok) {
+    throw new Error(`${response.status} ${response.statusText}`)
+  }
+
+  const { integrationManagementURL } = await response.json()
+
+  return integrationManagementURL
 }
 
 export const handleErrorCallback = async (
@@ -62,11 +88,15 @@ export const handleErrorCallback = async (
   `
 }
 
-export const handleCallbackRequest: APIGatewayProxyHandlerV2 = async (
+export const handleCallbackRequest: APIGatewayProxyHandler = async (
   event
-): Promise<APIGatewayProxyStructuredResultV2> => {
-  const isStateValid =
-    event.queryStringParameters?.state && (await validateState(event.queryStringParameters.state))
+): Promise<APIGatewayProxyResult> => {
+  log('query string parameters: %O', event.queryStringParameters)
+  log('headers: %O', event.headers)
+
+  const state = event.queryStringParameters?.state
+  const signature = getSignatureCookie(event.headers.cookie || event.headers.Cookie || '')
+  const isStateValid = state && signature && verifyState(state, signature)
 
   if (!isStateValid) {
     return {
@@ -79,13 +109,14 @@ export const handleCallbackRequest: APIGatewayProxyHandlerV2 = async (
   }
 
   if (event.queryStringParameters?.code) {
-    await handleSuccessCallback(event.queryStringParameters.code)
+    const location = await handleSuccessCallback(event.queryStringParameters.code)
 
     return {
       statusCode: 302,
       headers: {
-        Location: 'https://portal-staging.agriwebb.com/accounts/integrations',
+        Location: location,
       },
+      body: '',
     }
   } else {
     return {

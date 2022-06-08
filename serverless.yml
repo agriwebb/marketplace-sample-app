@@ -1,6 +1,6 @@
 frameworkVersion: '3'
 
-service: prototype-oauth-client
+service: third-party-integration-example
 
 plugins:
   - serverless-esbuild
@@ -8,7 +8,6 @@ plugins:
 
 custom:
   esbuild:
-    target: node16
     sourcemap: true
 
 provider:
@@ -17,46 +16,27 @@ provider:
   region: ap-southeast-2
   lambdaHashingVersion: 20201221
   environment:
-    AWS_BUCKET: !Ref Bucket
-  iam:
-    role:
-      statements:
-        - Effect: Allow
-          Action:
-            - s3:GetObject
-            - s3:PutObject
-            - s3:DeleteObject
-          Resource:
-            - !Join
-              - /
-              - - !GetAtt
-                  - Bucket
-                  - Arn
-                - v2
-                - cdn
-                - '*'
+    BASE_URL:
+      Fn::Join:
+        - ''
+        - - https://
+          - Ref: ApiGatewayRestApi
+          - .execute-api.${opt:region, self:provider.region}.amazonaws.com/${sls:stage}/
 
 package:
   individually: true
 
 functions:
-  handleInstallation:
-    handler: src/handle-installation.handleInstallationRequest
-    events:
-      - httpApi:
-          method: GET
-          path: /install/agriwebb
-
   handleCallback:
     handler: src/handle-callback.handleCallbackRequest
     events:
-      - httpApi:
+      - http:
           method: GET
-          path: /callback/agriwebb
+          path: /callback
 
-resources:
-  Resources:
-    Bucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: aw-playground-${self:service}
+  handleInstall:
+    handler: src/handle-install.handleInstallRequest
+    events:
+      - http:
+          method: GET
+          path: /install

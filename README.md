@@ -1,20 +1,12 @@
-# Application
+# Third-Party Integration Example
 
 ## Table of Contents
 
 - [Quick Start](#quick-start)
-- [Scripts](#scripts)
 
 ## Quick Start
 
 ```
 npm install
-npm run start
+npm start
 ```
-
-## Scripts
-
-| Script          | Description            |
-| --------------- | ---------------------- |
-| `npm run start` | Start the application. |
-| `npm run build` | Build the application. |
