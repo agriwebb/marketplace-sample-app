@@ -15,6 +15,11 @@ export const PUBLIC_KEY =
   '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs7xcshXpNSVq4k3SqsH8\norrw/4BDePqvoa0kUMocH6xVdzGP1foE+R9HMfd0gHtfkb1PXbgDuncqzjT8T5/6\nBTaBnStZz2/+VzbOPIqczcsvoqPwDEtB0tRp2Q7MqrYKbUdZnZuV9Gy1Bdpao4vJ\n+ZEc+smqPzATNClnHoBD6MqLsSOmWChuwHlu/HU43au9qrxWxJXw+PuyLRewhMb8\nW7zD8LX0b0hX2iOSO3Zq+VKz+QnFOdmUC4w35EApHbjUlh0CiWb7UuG65Jd3Ujw5\nJWrUn3F36tDhpg/Fueybx+kGWiVxV/4a8RA+zXr49yDybxEJpvnI6X3Ay3V2zfIT\nXwIDAQAB\n-----END PUBLIC KEY-----\n'
 
 /*
+  The Public API integration complete URL.
+*/
+export const INTEGRATION_COMPLETE_URL = 'https://api-staging.agriwebb.com/v2/integration-complete'
+
+/*
   The OAuth 2.0 server endpoints.
 */
 export const OAUTH_SERVER_AUTHORIZE_URL = 'https://discord.com/api/oauth2/authorize'

@@ -1,6 +1,27 @@
+/*
+  The callback endpoint exchanges the authorization code for an access token and
+  a refresh token; finally, a call to the public API success endpoint completes
+  the integration. 
+
+  The integration success endpoint returns an integration management URL. We
+  recommend redirecting the user to this URL; however, if this does not make
+  sense for your application's user experience flow, you can ignore this URL.
+
+  For more information on the callback endpoint, see section 4.1.2 in RFC6749
+  https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.2
+
+  For more information regarding the integration success endpoint, please see
+  ...
+*/
 import { type APIGatewayProxyHandler, type APIGatewayProxyResult } from 'aws-lambda'
 import 'isomorphic-fetch'
-import { CLIENT_ID, CLIENT_SECRET, OAUTH_SERVER_TOKEN_URL, REDIRECT_URI } from './environment.js'
+import {
+  CLIENT_ID,
+  CLIENT_SECRET,
+  INTEGRATION_COMPLETE_URL,
+  OAUTH_SERVER_TOKEN_URL,
+  REDIRECT_URI,
+} from './environment.js'
 import { logger } from './logger.js'
 import { getSignatureCookie, verifyState } from './state-manager.js'
 
@@ -17,7 +38,9 @@ const getAccessToken = async (code: string): Promise<string> => {
   const response = await fetch(OAUTH_SERVER_TOKEN_URL, {
     method: 'POST',
     headers: {
-      Authorization: `Basic ${Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64')}`,
+      Authorization: `Basic ${Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`, 'utf-8').toString(
+        'base64'
+      )}`,
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: searchParams.toString(),
@@ -41,22 +64,24 @@ export const handleSuccessCallback = async (code: string): Promise<string> => {
 
   log('access token: "%s"', accessToken)
 
-  const response = await fetch('https://api.agriwebb.com/v2/integration-complete', {
+  const response = await fetch(INTEGRATION_COMPLETE_URL, {
     method: 'POST',
     headers: {
       Authorization: accessToken,
       'Content-Type': 'application/json; charset=utf-8',
     },
-    body: JSON.stringify({}, null, 2),
+    body: JSON.stringify({
+      existingSubscription: false,
+    }),
   })
 
   if (!response.ok) {
     throw new Error(`${response.status} ${response.statusText}`)
   }
 
-  const { integrationManagementURL } = await response.json()
+  const { redirectURL } = await response.json()
 
-  return integrationManagementURL
+  return redirectURL
 }
 
 export const handleErrorCallback = async (
