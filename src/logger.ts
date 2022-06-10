@@ -1,4 +1,4 @@
 import debug from 'debug'
-if (!process.env.DEBUG) debug.enable('prototype-oauth-client*')
-export const log = debug('prototype-oauth-client')
+if (!process.env.DEBUG) debug.enable('third-party-integration-example*')
+export const log = debug('third-party-integration-example')
 export const logger = (namespace: string) => log.extend(namespace, ':')
