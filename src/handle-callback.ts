@@ -55,14 +55,14 @@ const getAccessToken = async (code: string): Promise<string> => {
   return `${token_type} ${access_token}`
 }
 
-export const handleSuccessCallback = async (code: string): Promise<string> => {
-  return 'https://portal-staging.agriwebb.com/accounts/integrations'
-
+export const handleCallback = async (code: string): Promise<string> => {
   log('exchanging code for access token. code: "%s"', code)
 
   const accessToken = await getAccessToken(code)
 
   log('access token: "%s"', accessToken)
+
+  return accessToken
 
   const response = await fetch(INTEGRATION_COMPLETE_URL, {
     method: 'POST',
@@ -95,7 +95,7 @@ export const handleErrorCallback = async (
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Prototype OAuth Client</title>
+        <title>Third Party Integration Example</title>
         <script src="https://cdn.tailwindcss.com"></script>
       </head>
       <body class="h-full flex flex-col items-center justify-center">
@@ -134,14 +134,27 @@ export const handleCallbackRequest: APIGatewayProxyHandler = async (
   }
 
   if (event.queryStringParameters?.code) {
-    const location = await handleSuccessCallback(event.queryStringParameters.code)
+    const accessToken = await handleCallback(event.queryStringParameters.code)
 
     return {
-      statusCode: 302,
+      statusCode: 200,
       headers: {
-        Location: location,
+        'Content-Type': 'text/html; charset=utf-8',
       },
-      body: '',
+      body: `
+      <!DOCTYPE html>
+      <html class="h-full" lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Third Party Integration Example</title>
+          <script src="https://cdn.tailwindcss.com"></script>
+        </head>
+        <body class="h-full flex flex-col items-center justify-center">
+          ${accessToken}
+        </body>
+      </html>
+      `,
     }
   } else {
     return {

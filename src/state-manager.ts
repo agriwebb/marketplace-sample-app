@@ -16,8 +16,8 @@
 
 import base64url from 'base64url'
 import cookie, { CookieSerializeOptions } from 'cookie'
-import { randomBytes, sign, verify } from 'crypto'
-import { PRIVATE_KEY, PUBLIC_KEY, REDIRECT_URI } from './environment.js'
+import { createHmac, randomBytes } from 'crypto'
+import { REDIRECT_URI, STATE_MANAGER_SECRET } from './environment.js'
 import { logger } from './logger.js'
 
 const log = logger('state-manager')
@@ -50,7 +50,7 @@ export const getSignatureCookie = (string: string) => {
 
 export const createState = () => {
   const stateBuffer = randomBytes(48)
-  const signatureBuffer = sign('sha256', stateBuffer, PRIVATE_KEY)
+  const signatureBuffer = createHmac('SHA256', STATE_MANAGER_SECRET).update(stateBuffer).digest()
 
   const state = base64url.encode(stateBuffer)
   const signature = base64url.encode(signatureBuffer)
@@ -63,7 +63,10 @@ export const createState = () => {
 export const verifyState = (state: string, signature: string) => {
   const stateBuffer = base64url.toBuffer(state)
   const signatureBuffer = base64url.toBuffer(signature)
-  const isStateValid = verify('sha256', stateBuffer, PUBLIC_KEY, signatureBuffer)
+  const isStateValid = createHmac('SHA256', STATE_MANAGER_SECRET)
+    .update(stateBuffer)
+    .digest()
+    .equals(signatureBuffer)
 
   log('verify-state valid: %s state: "%s" signature: "%s"', isStateValid, state, signature)
 
