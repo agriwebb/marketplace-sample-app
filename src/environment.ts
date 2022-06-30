@@ -2,7 +2,7 @@
   The base url the applicaiton is deployed at.
 */
 export const BASE_URL =
-  (process.env.IS_OFFLINE !== 'true' && process.env.BASE_URL) || 'http://localhost:3000/dev/'
+  (process.env.IS_OFFLINE !== 'true' && process.env.BASE_URL) || 'http://localhost:4000/dev/'
 
 /*
   This stage manager secret is used in the verification of the state parameter.
@@ -42,4 +42,4 @@ export const REDIRECT_URI = new URL('./callback', BASE_URL).href
 /*
   The scopes to request from the OAuth 2.0 server.
 */
-export const SCOPE = 'identify'
+export const SCOPE = 'read:animals write:animals'

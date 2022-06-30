@@ -9,6 +9,10 @@ plugins:
 custom:
   esbuild:
     sourcemap: true
+  serverless-offline:
+    httpPort: 4000
+    lambdaPort: 4002
+    websocketPort: 4001
 
 provider:
   name: aws
