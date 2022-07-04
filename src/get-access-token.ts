@@ -12,9 +12,6 @@ export const getAccessToken = async (code: string): Promise<string> => {
   searchParams.set('redirect_uri', REDIRECT_URI)
   searchParams.set('client_id', CLIENT_ID)
 
-  // temporary workaround for not having basic authorization
-  searchParams.set('client_secret', CLIENT_SECRET)
-
   const response = await fetch(OAUTH_SERVER_TOKEN_URL, {
     method: 'POST',
     headers: {
