@@ -15,42 +15,12 @@
 */
 import { type APIGatewayProxyHandler, type APIGatewayProxyResult } from 'aws-lambda'
 import 'isomorphic-fetch'
-import { INTEGRATION_COMPLETE_URL } from './environment.js'
 import { OAuth2Error, renderError } from './error.js'
 import { getAccessToken } from './get-access-token.js'
 import { logger } from './logger.js'
 import { getSignatureCookie, verifyState } from './state-manager.js'
 
 const log = logger('handle-callback')
-
-export const handleCallback = async (code: string): Promise<string> => {
-  log('exchanging code for access token. code: "%s"', code)
-
-  const accessToken = await getAccessToken(code)
-
-  log('access token: "%s"', accessToken)
-
-  return accessToken
-
-  const response = await fetch(INTEGRATION_COMPLETE_URL, {
-    method: 'POST',
-    headers: {
-      Authorization: accessToken,
-      'Content-Type': 'application/json; charset=utf-8',
-    },
-    body: JSON.stringify({
-      existingSubscription: false,
-    }),
-  })
-
-  if (!response.ok) {
-    throw new Error(`${response.status} ${response.statusText}`)
-  }
-
-  const { redirectURL } = await response.json()
-
-  return redirectURL
-}
 
 export const handleCallbackRequest: APIGatewayProxyHandler = async (
   event
@@ -74,7 +44,9 @@ export const handleCallbackRequest: APIGatewayProxyHandler = async (
     }
 
     if (event.queryStringParameters?.code) {
-      const accessToken = await handleCallback(event.queryStringParameters.code)
+      const { access_token, token_type, refresh_token } = await getAccessToken(
+        event.queryStringParameters.code
+      )
 
       return {
         statusCode: 200,
@@ -89,9 +61,29 @@ export const handleCallbackRequest: APIGatewayProxyHandler = async (
               <meta name="viewport" content="width=device-width, initial-scale=1.0">
               <title>Third Party Integration Example</title>
               <script src="https://cdn.tailwindcss.com"></script>
+              <script>
+                const accessToken = "${token_type} ${access_token}"
+                const refreshToken = "${refresh_token}"
+
+                addEventListener('load', () => {
+                  const copyAccessTokenButton = document.querySelector('#copy-access-token')
+                  const copyRefreshTokenButton = document.querySelector('#copy-refresh-token')
+
+                  copyAccessTokenButton.addEventListener('click', async () => {
+                    await navigator.clipboard.writeText(accessToken)
+                  })
+
+                  copyRefreshTokenButton.addEventListener('click', async () => {
+                    await navigator.clipboard.writeText(refreshToken)
+                  })
+                })
+              </script>
             </head>
-            <body class="h-full flex flex-col items-center justify-center">
-              ${accessToken}
+            <body class="h-full flex flex-col items-center justify-center font-mono">
+              <div class="flex flex-row gap-2 w-full max-w-prose">
+                <button id="copy-refresh-token" class="border-2 rounded-md py-1 flex-auto">Copy Refresh Token</button>
+                <button id="copy-access-token" class="bg-gradient-to-r from-rose-500 to-purple-500 text-white py-1 rounded-md flex-auto">Copy Access Token</button>
+              </div>
             </body>
           </html>
         `,

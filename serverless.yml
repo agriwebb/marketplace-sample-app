@@ -18,7 +18,6 @@ provider:
   name: aws
   runtime: nodejs16.x
   region: ap-southeast-2
-  lambdaHashingVersion: 20201221
   environment:
     BASE_URL:
       Fn::Join:

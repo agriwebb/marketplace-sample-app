@@ -4,7 +4,14 @@ import { logger } from './logger.js'
 
 const log = logger('get-access-token')
 
-export const getAccessToken = async (code: string): Promise<string> => {
+export interface AccessToken {
+  access_token: string
+  token_type: string
+  expires_in?: number
+  refresh_token?: string
+}
+
+export const getAccessToken = async (code: string): Promise<AccessToken> => {
   const searchParams = new URLSearchParams()
 
   searchParams.set('grant_type', 'authorization_code')
@@ -45,5 +52,5 @@ export const getAccessToken = async (code: string): Promise<string> => {
 
   log(`token response: %O`, { access_token, token_type, expires_in, refresh_token })
 
-  return `${token_type} ${access_token}`
+  return { access_token, token_type, expires_in, refresh_token }
 }
