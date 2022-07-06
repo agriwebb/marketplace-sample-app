@@ -2,7 +2,7 @@
   The install endpoint appends a selection of parameters to the OAuth server's
   authorize endpoint. 
 
-  Since our OAuth implementation is built around organisations, we support an
+  Since our OAuth implementation is built around organizations, we support an
   "organization" hint parameter which MUST be passed through to the OAuth server
   if provided.
 

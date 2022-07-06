@@ -4,7 +4,7 @@
   client and the user-agent (i.e., protected by same-origin policy).
 
   This implementation generates a cryptographically random state parameter. It
-  utilises an expiring "same-site" cookie to store an encrypted signature of the
+  utilizes an expiring "same-site" cookie to store an encrypted signature of the
   state for verification.
 
   For more information regarding CSRF, please see section 10.12 in RFC6749
