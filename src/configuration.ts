@@ -19,6 +19,11 @@ export const OAUTH_SERVER_AUTHORIZE_URL = 'https://api.staging.agriwebb.com/oaut
 export const OAUTH_SERVER_TOKEN_URL = 'https://api.staging.agriwebb.com/oauth2/token'
 
 /*
+  The Marketplace Callback endpoint.
+*/
+export const MARKETPLACE_CALLBACK_URL = 'https://api.staging.agriwebb.com/v2/marketplace/callback'
+
+/*
   The client credentials provided by the OAuth 2.0 server.
 
   The client secret should be stored in something like AWS Secrets Manager or

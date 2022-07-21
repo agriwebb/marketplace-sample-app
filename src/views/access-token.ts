@@ -1,7 +1,7 @@
-import { AccessToken } from '../oauth2/token-exchange'
+import { Credentials } from '../oauth2/token-exchange'
 import { renderHtml } from './html'
 
-export const renderAccessToken = ({ access_token, token_type, refresh_token }: AccessToken) => {
+export const renderAccessToken = ({ access_token, token_type, refresh_token }: Credentials) => {
   return renderHtml(`
     <div class="flex flex-row gap-2 w-full max-w-prose">
       <button

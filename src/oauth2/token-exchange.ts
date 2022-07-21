@@ -15,14 +15,31 @@ import { OAuth2Error } from '../views/error.js'
 
 const log = logger('get-access-token')
 
-export interface AccessToken {
+interface AuthorisationCodeExchange {
+  grant_type: 'authorization_code'
+  code: string
+  redirect_uri?: string
+  client_id?: string
+}
+
+interface RefreshTokenExchange {
+  grant_type: 'refresh_token'
+  refresh_token: string
+  scope?: string
+}
+
+export interface Credentials {
   access_token: string
   token_type: string
   expires_in?: number
   refresh_token?: string
 }
 
-const getAccessToken = async (searchParams: URLSearchParams): Promise<AccessToken> => {
+const callTokenExchange = async (
+  options: AuthorisationCodeExchange | RefreshTokenExchange
+): Promise<Credentials> => {
+  const searchParams = new URLSearchParams(options as unknown as Record<string, string>)
+
   const response = await fetch(OAUTH_SERVER_TOKEN_URL, {
     method: 'POST',
     headers: {
@@ -59,22 +76,18 @@ const getAccessToken = async (searchParams: URLSearchParams): Promise<AccessToke
   return { access_token, token_type, expires_in, refresh_token }
 }
 
-export const exchangeAuthorisationCode = async (code: string): Promise<AccessToken> => {
-  const searchParams = new URLSearchParams()
-
-  searchParams.set('grant_type', 'authorization_code')
-  searchParams.set('code', code)
-  searchParams.set('redirect_uri', REDIRECT_URI)
-  searchParams.set('client_id', CLIENT_ID)
-
-  return getAccessToken(searchParams)
+export const exchangeAuthorisationCode = async (code: string): Promise<Credentials> => {
+  return callTokenExchange({
+    grant_type: 'authorization_code',
+    code,
+    redirect_uri: REDIRECT_URI,
+    client_id: CLIENT_ID,
+  })
 }
 
-export const exchangeRefreshToken = async (refreshToken: string): Promise<AccessToken> => {
-  const searchParams = new URLSearchParams()
-
-  searchParams.set('grant_type', 'refresh_token')
-  searchParams.set('refresh_token', refreshToken)
-
-  return getAccessToken(searchParams)
+export const exchangeRefreshToken = async (refreshToken: string): Promise<Credentials> => {
+  return callTokenExchange({
+    grant_type: 'refresh_token',
+    refresh_token: refreshToken,
+  })
 }
