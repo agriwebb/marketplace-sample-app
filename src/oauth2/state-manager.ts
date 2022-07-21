@@ -17,8 +17,8 @@
 import base64url from 'base64url'
 import cookie, { CookieSerializeOptions } from 'cookie'
 import { createHmac, randomBytes } from 'crypto'
-import { REDIRECT_URI, STATE_MANAGER_SECRET } from './environment.js'
-import { logger } from './logger.js'
+import { REDIRECT_URI, STATE_MANAGER_SECRET } from '../configuration.js'
+import { logger } from '../logger.js'
 
 const log = logger('state-manager')
 

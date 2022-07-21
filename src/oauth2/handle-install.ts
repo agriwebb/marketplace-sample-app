@@ -3,19 +3,19 @@
   authorize endpoint. 
 
   Since our OAuth implementation is built around organizations, we support an
-  "organization" hint parameter which MUST be passed through to the OAuth server
-  if provided.
+  "organization" parameter which MUST be passed through to the OAuth server if
+  provided.
 
   For more information about OAuth 2.0, please see section 4.1.1 in RFC6749
   https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.1
 
-  For more information about the "organization" hint parameter, please see
+  For more information about the "organization" parameter, please see
   ...
 */
 
 import { type APIGatewayProxyHandler } from 'aws-lambda'
-import { CLIENT_ID, OAUTH_SERVER_AUTHORIZE_URL, REDIRECT_URI, SCOPE } from './environment.js'
-import { logger } from './logger.js'
+import { CLIENT_ID, OAUTH_SERVER_AUTHORIZE_URL, REDIRECT_URI, SCOPE } from '../configuration.js'
+import { logger } from '../logger.js'
 import { createState, setSignatureCookie } from './state-manager.js'
 
 const log = logger('handle-install')

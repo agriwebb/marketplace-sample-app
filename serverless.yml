@@ -30,16 +30,16 @@ package:
   individually: true
 
 functions:
-  handleCallback:
-    handler: src/handle-callback.handleCallbackRequest
-    events:
-      - http:
-          method: GET
-          path: /callback
-
-  handleInstall:
-    handler: src/handle-install.handleInstallRequest
+  oauth2-install:
+    handler: src/oauth2/handle-install.handleInstallRequest
     events:
       - http:
           method: GET
           path: /install
+
+  oauth2-callback:
+    handler: src/oauth2/handle-callback.handleCallbackRequest
+    events:
+      - http:
+          method: GET
+          path: /callback

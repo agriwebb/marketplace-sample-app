@@ -5,17 +5,12 @@ export const BASE_URL =
   (process.env.IS_OFFLINE !== 'true' && process.env.BASE_URL) || 'http://localhost:4000/dev/'
 
 /*
-  This stage manager secret is used in the verification of the state parameter.
+  This state manager secret is used in the verification of the state parameter.
   It should be stored in something like AWS Secrets Manager or similar, however,
   for the portability of this example it is stored here.
 */
 export const STATE_MANAGER_SECRET =
   'mgCu1leGbPobYiJTWdeZe7uFQ7ZfgxNa-q-5dDeAWMVIOW-z8VAm5amg0phKEQ6oNUi5ynKo6JsxASKpjamkBg'
-
-/*
-  The Public API integration complete URL.
-*/
-export const INTEGRATION_COMPLETE_URL = 'https://api.staging.agriwebb.com/v2/integration-complete'
 
 /*
   The OAuth 2.0 server endpoints.
@@ -42,4 +37,4 @@ export const REDIRECT_URI = new URL('./callback', BASE_URL).href
 /*
   The scopes to request from the OAuth 2.0 server.
 */
-export const SCOPE = 'read:animals write:animals'
+export const SCOPE = 'read:farms'
