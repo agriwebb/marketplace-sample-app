@@ -1,0 +1,4 @@
+.esbuild
+.serverless
+lib
+node_modules

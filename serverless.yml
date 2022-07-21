@@ -1,0 +1,45 @@
+frameworkVersion: '3'
+
+service: third-party-integration-example
+
+plugins:
+  - serverless-esbuild
+  - serverless-offline
+
+custom:
+  esbuild:
+    sourcemap: true
+  serverless-offline:
+    httpPort: 4000
+    lambdaPort: 4002
+    websocketPort: 4001
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  region: ap-southeast-2
+  environment:
+    BASE_URL:
+      Fn::Join:
+        - ''
+        - - https://
+          - Ref: ApiGatewayRestApi
+          - .execute-api.${opt:region, self:provider.region}.amazonaws.com/${sls:stage}/
+
+package:
+  individually: true
+
+functions:
+  oauth2-install:
+    handler: src/oauth2/handle-install.handleInstallRequest
+    events:
+      - http:
+          method: GET
+          path: /install
+
+  oauth2-callback:
+    handler: src/oauth2/handle-callback.handleCallbackRequest
+    events:
+      - http:
+          method: GET
+          path: /callback
