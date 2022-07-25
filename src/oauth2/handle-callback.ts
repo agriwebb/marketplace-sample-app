@@ -11,8 +11,11 @@
 */
 import { type APIGatewayProxyHandler, type APIGatewayProxyResult } from 'aws-lambda'
 import 'isomorphic-fetch'
+import { v4 as uuid } from 'uuid'
+import { CREDENTIALS_URI } from '../configuration-server.js'
 import { logger } from '../logger.js'
-import { renderAccessToken } from '../views/access-token.js'
+import { handleLoginRedirect } from '../server/handle-login.js'
+import { getUserCookie, upsertUser } from '../server/users-manager.js'
 import { OAuth2Error, renderError } from '../views/error.js'
 import { getSignatureCookie, verifyState } from './state-manager.js'
 import { exchangeAuthorisationCode } from './token-exchange.js'
@@ -25,6 +28,14 @@ export const handleCallbackRequest: APIGatewayProxyHandler = async (
   try {
     log('query string parameters: %O', event.queryStringParameters)
     log('headers: %O', event.headers)
+
+    const username = getUserCookie(event.headers.cookie || event.headers.Cookie || '')
+
+    if (!username) {
+      return handleLoginRedirect(event)
+    }
+
+    const credentialId = uuid()
 
     const state = event.queryStringParameters?.state
     const signature = getSignatureCookie(event.headers.cookie || event.headers.Cookie || '')
@@ -41,16 +52,15 @@ export const handleCallbackRequest: APIGatewayProxyHandler = async (
     }
 
     if (event.queryStringParameters?.code) {
-      const { access_token, token_type, refresh_token } = await exchangeAuthorisationCode(
-        event.queryStringParameters.code
-      )
+      await exchangeAuthorisationCode(credentialId, event.queryStringParameters.code)
+      await upsertUser(username, credentialId)
 
       return {
-        statusCode: 200,
+        statusCode: 301,
         headers: {
-          'Content-Type': 'text/html; charset=utf-8',
+          Location: CREDENTIALS_URI,
         },
-        body: renderAccessToken({ access_token, token_type, refresh_token }),
+        body: '',
       }
     } else {
       throw new OAuth2Error(

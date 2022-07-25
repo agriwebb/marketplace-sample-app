@@ -9,11 +9,13 @@
   ...
 */
 
-import { CLIENT_ID, CLIENT_SECRET, OAUTH_SERVER_TOKEN_URL, REDIRECT_URI } from '../configuration.js'
+import { CLIENT_ID, CLIENT_SECRET, OAUTH_SERVER_TOKEN_URL } from '../configuration-oauth2'
+import { REDIRECT_URI } from '../configuration-server.js'
 import { logger } from '../logger.js'
+import { setCredentials } from '../server/credentials'
 import { OAuth2Error } from '../views/error.js'
 
-const log = logger('get-access-token')
+const log = logger('token-exchange')
 
 interface AuthorisationCodeExchange {
   grant_type: 'authorization_code'
@@ -54,7 +56,7 @@ const callTokenExchange = async (
   if (!response.ok) {
     try {
       const body = await response.text()
-      log('error response: %s', body)
+      log('error response: "%s"', body)
       const json = JSON.parse(body)
       throw new OAuth2Error(json.error, json.error_description, json.error_uri)
     } catch (error) {
@@ -76,18 +78,32 @@ const callTokenExchange = async (
   return { access_token, token_type, expires_in, refresh_token }
 }
 
-export const exchangeAuthorisationCode = async (code: string): Promise<Credentials> => {
-  return callTokenExchange({
+export const exchangeAuthorisationCode = async (
+  credentialId: string,
+  code: string
+): Promise<Credentials> => {
+  const credentials = await callTokenExchange({
     grant_type: 'authorization_code',
     code,
     redirect_uri: REDIRECT_URI,
     client_id: CLIENT_ID,
   })
+
+  await setCredentials(credentialId, credentials)
+
+  return credentials
 }
 
-export const exchangeRefreshToken = async (refreshToken: string): Promise<Credentials> => {
-  return callTokenExchange({
+export const exchangeRefreshToken = async (
+  credentialId: string,
+  refreshToken: string
+): Promise<Credentials> => {
+  const credentials = await callTokenExchange({
     grant_type: 'refresh_token',
     refresh_token: refreshToken,
   })
+
+  await setCredentials(credentialId, credentials)
+
+  return credentials
 }

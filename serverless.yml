@@ -19,27 +19,134 @@ provider:
   runtime: nodejs16.x
   region: ap-southeast-2
   environment:
+    USERS_TABLE_NAME: !Ref UsersTable
+    ACCESS_TOKEN_TABLE_NAME: !Ref AccessTokenTable
+    REFRESH_TOKEN_TABLE_NAME: !Ref RefreshTokenTable
     BASE_URL:
       Fn::Join:
         - ''
         - - https://
           - Ref: ApiGatewayRestApi
-          - .execute-api.${opt:region, self:provider.region}.amazonaws.com/${sls:stage}/
+          - .execute-api.${aws:region}.amazonaws.com/${sls:stage}/
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+          Resource: !GetAtt
+            - UsersTable
+            - Arn
+        - Effect: Allow
+          Action:
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: !GetAtt
+            - AccessTokenTable
+            - Arn
+        - Effect: Allow
+          Action:
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: !GetAtt
+            - RefreshTokenTable
+            - Arn
 
 package:
   individually: true
 
 functions:
-  oauth2-install:
+  ServerGetLogin:
+    handler: src/server/handle-login.handleGetLoginRequest
+    events:
+      - http:
+          method: GET
+          path: /login
+
+  ServerPostLogin:
+    handler: src/server/handle-login.handlePostLoginRequest
+    events:
+      - http:
+          method: POST
+          path: /login
+
+  ServerCredentials:
+    handler: src/server/handle-credentials.handleCredentialsRequest
+    events:
+      - http:
+          method: GET
+          path: /app/credentials
+
+  OAuth2Install:
     handler: src/oauth2/handle-install.handleInstallRequest
     events:
       - http:
           method: GET
           path: /install
 
-  oauth2-callback:
+  OAuth2Callback:
     handler: src/oauth2/handle-callback.handleCallbackRequest
     events:
       - http:
           method: GET
           path: /callback
+
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: username
+            AttributeType: S
+          # - AttributeName: credentialId
+          #   AttributeType: S
+          # - AttributeName: expiresIn
+          #   AttributeType: N
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: username
+            KeyType: HASH
+        TimeToLiveSpecification:
+          AttributeName: expiresIn
+          Enabled: true
+
+    AccessTokenTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: credentialId
+            AttributeType: S
+          # - AttributeName: tokenType
+          #   AttributeType: S
+          # - AttributeName: accessToken
+          #   AttributeType: S
+          # - AttributeName: expiresIn
+          #   AttributeType: N
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: credentialId
+            KeyType: HASH
+        SSESpecification:
+          SSEEnabled: true
+        TimeToLiveSpecification:
+          AttributeName: expiresIn
+          Enabled: true
+
+    RefreshTokenTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: credentialId
+            AttributeType: S
+          # - AttributeName: refreshToken
+          #   AttributeType: S
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: credentialId
+            KeyType: HASH
+        SSESpecification:
+          SSEEnabled: true

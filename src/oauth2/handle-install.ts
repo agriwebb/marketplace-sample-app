@@ -14,7 +14,8 @@
 */
 
 import { type APIGatewayProxyHandler } from 'aws-lambda'
-import { CLIENT_ID, OAUTH_SERVER_AUTHORIZE_URL, REDIRECT_URI, SCOPE } from '../configuration.js'
+import { CLIENT_ID, OAUTH_SERVER_AUTHORIZE_URL } from '../configuration-oauth2'
+import { REDIRECT_URI, SCOPE } from '../configuration-server.js'
 import { logger } from '../logger.js'
 import { createState, setSignatureCookie } from './state-manager.js'
 

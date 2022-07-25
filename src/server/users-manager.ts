@@ -1,0 +1,84 @@
+import { DynamoDBClient, GetItemCommand, UpdateItemCommand } from '@aws-sdk/client-dynamodb'
+import cookie, { CookieSerializeOptions } from 'cookie'
+import { BASE_URL, USERS_TABLE_NAME } from '../configuration-server.js'
+import { logger } from '../logger.js'
+
+interface User {
+  username: string
+  credentialId: string | null
+}
+
+const log = logger('user-manager')
+
+export const setUserCookie = (username: string) => {
+  const cookieOptions: CookieSerializeOptions = {
+    httpOnly: true,
+    maxAge: 1800,
+    path: new URL(BASE_URL).pathname,
+    secure: true,
+    sameSite: 'lax',
+  }
+
+  log('cookie options: %O', cookieOptions)
+
+  const userCookie = cookie.serialize('User', username, cookieOptions)
+
+  log('set-user-cookie: "%s"', userCookie)
+
+  return userCookie
+}
+
+export const getUserCookie = (string: string) => {
+  const user = cookie.parse(string).User
+
+  log('get-user-cookie: "%s"', string)
+
+  return user
+}
+
+const client = new DynamoDBClient({})
+
+export const upsertUser = async (username: string, credentialId?: string): Promise<User> => {
+  log('upsert-user username: "%s" credentialId: "%s"', username, credentialId)
+
+  const result = await client.send(
+    new UpdateItemCommand({
+      TableName: USERS_TABLE_NAME,
+      Key: { username: { S: username } },
+      ReturnValues: 'ALL_NEW',
+      UpdateExpression: credentialId
+        ? 'SET credentialId = :credentialId, expiresIn = :expiresIn'
+        : 'SET expiresIn = :expiresIn',
+      ExpressionAttributeValues: credentialId
+        ? {
+            ':credentialId': { S: credentialId },
+            ':expiresIn': { N: '300' },
+          }
+        : {
+            ':expiresIn': { N: '300' },
+          },
+    })
+  )
+
+  log('upsert-user result: %O', result)
+
+  return {
+    username: result.Attributes?.username?.S!,
+    credentialId: result.Attributes?.credentialId?.S || null,
+  }
+}
+
+export const getUserCredentialId = async (username: string): Promise<string | null> => {
+  log('get-user-credential-id username: "%s"', username)
+
+  const result = await client.send(
+    new GetItemCommand({
+      TableName: USERS_TABLE_NAME,
+      Key: { username: { S: username } },
+    })
+  )
+
+  log('get-user-credential-id result: %O', result)
+
+  return result.Item?.credentialId?.S || null
+}

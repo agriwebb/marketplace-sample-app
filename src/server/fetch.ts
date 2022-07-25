@@ -1,42 +1,84 @@
+import { logger } from '../logger.js'
 import { exchangeRefreshToken } from '../oauth2/token-exchange.js'
+import { getAuthorizationHeader, getRefreshToken } from './credentials.js'
 
-const getCredentials = async (): Promise<Credentials> => {}
+const log = logger('fetch')
 
-const modifyRequest = async (request: Request): Promise<Request> => {
-  const credentials = await getCredentials()
+const addAuthorisationHeader = (request: Request, authorisation: string): Request => {
+  log('add authorisation header: "%s"', authorisation)
 
   const headers = new Headers(request.headers)
 
   if (!headers.has('Authorization')) {
-    headers.set('Authorization', `${credentials.token_type} ${credentials.access_token}`)
+    headers.set('Authorization', authorisation)
   }
 
   return new Request(request, { headers })
 }
 
 export const fetchWithCredentials = async (
+  credentialId: string,
   input: RequestInfo,
   init?: RequestInit
 ): Promise<Response> => {
   const request = input instanceof Request ? input : new Request(input, init)
-  return fetch(await modifyRequest(request))
+
+  log(
+    'fetch with credentials: "%s" for request: "%s" "%s"',
+    credentialId,
+    request.method,
+    request.url
+  )
+
+  const authorisation = await getAuthorizationHeader(credentialId)
+  if (!authorisation) {
+    return new Response(undefined, { status: 401 })
+  }
+
+  return fetch(addAuthorisationHeader(request, authorisation))
 }
 
-const useRefreshToken = async (request: Request, response: Response): Promise<Response> => {
-  const credentials = await getCredentials()
+const useRefreshToken = async (
+  credentialId: string,
+  request: Request,
+  response: Response
+): Promise<Response> => {
+  if (response.status === 401) {
+    log('use refresh token: "%s" for request: "%s" "%s"', credentialId, request.method, request.url)
 
-  if (response.status === 401 && credentials.refresh_token) {
-    await exchangeRefreshToken(credentials.refresh_token)
-    return fetchWithCredentials(request)
+    const refreshToken = await getRefreshToken(credentialId)
+
+    if (!refreshToken) {
+      return response
+    }
+
+    try {
+      await exchangeRefreshToken(credentialId, refreshToken)
+    } catch {
+      return response
+    }
+
+    return fetchWithCredentials(credentialId, request)
   }
 
   return response
 }
 
 export const fetchWithCredentialRefresh = async (
+  credentialId: string,
   input: RequestInfo,
   init?: RequestInit
 ): Promise<Response> => {
   const request = input instanceof Request ? input : new Request(input, init)
-  return fetchWithCredentials(request).then((response) => useRefreshToken(request, response))
+
+  log(
+    'fetch with credential refresh: "%s" for request: "%s" "%s"',
+    credentialId,
+    request.method,
+    request.url
+  )
+
+  return fetchWithCredentials(credentialId, request).then((response) =>
+    useRefreshToken(credentialId, request, response)
+  )
 }

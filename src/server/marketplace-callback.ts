@@ -1,5 +1,8 @@
-import { MARKETPLACE_CALLBACK_URL } from '../configuration.js'
+import { MARKETPLACE_CALLBACK_URL } from '../configuration-server.js'
+import { logger } from '../logger.js'
 import { fetchWithCredentialRefresh } from './fetch.js'
+
+const log = logger('marketplace-callback')
 
 interface IntegrationStatusOptions {
   type: 'integration-status'
@@ -35,9 +38,12 @@ type MarketplaceCallbackResult<T extends string> = T extends 'integration-status
 const callMarketplaceCallback = async <
   T extends IntegrationStatusOptions | IntegrationErrorOptions
 >(
+  credentialId: string,
   options: T
 ): Promise<MarketplaceCallbackResult<T['type']>> => {
-  const response = await fetchWithCredentialRefresh(MARKETPLACE_CALLBACK_URL, {
+  log('call marketplace callback: "%s" %O', credentialId, options)
+
+  const response = await fetchWithCredentialRefresh(credentialId, MARKETPLACE_CALLBACK_URL, {
     method: 'POST',
     body: JSON.stringify(options),
   })
@@ -50,18 +56,24 @@ const callMarketplaceCallback = async <
 }
 
 export const reportIntegrationStatus = async (
+  credentialId: string,
   status: IntegrationStatusOptions['data']['status']
 ): Promise<IntegrationStatusResult['data']> => {
-  return callMarketplaceCallback({
+  log('report integration status: "%s" "%s"', credentialId, status)
+
+  return callMarketplaceCallback(credentialId, {
     type: 'integration-status',
     data: { status },
   })
 }
 
 export const reportIntegrationError = async (
+  credentialId: string,
   data: IntegrationErrorOptions['data']
 ): Promise<void> => {
-  return callMarketplaceCallback({
+  log('report integration error: "%s" %O', credentialId, data)
+
+  return callMarketplaceCallback(credentialId, {
     type: 'integration-error',
     data,
   })

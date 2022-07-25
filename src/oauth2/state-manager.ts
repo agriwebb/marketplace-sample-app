@@ -17,7 +17,7 @@
 import base64url from 'base64url'
 import cookie, { CookieSerializeOptions } from 'cookie'
 import { createHmac, randomBytes } from 'crypto'
-import { REDIRECT_URI, STATE_MANAGER_SECRET } from '../configuration.js'
+import { REDIRECT_URI, STATE_MANAGER_SECRET } from '../configuration-server.js'
 import { logger } from '../logger.js'
 
 const log = logger('state-manager')
@@ -35,7 +35,7 @@ export const setSignatureCookie = (signature: string) => {
 
   const signatureCookie = cookie.serialize('Signature', signature, cookieOptions)
 
-  log('set-signature-cookie', signatureCookie)
+  log('set-signature-cookie: "%s"', signatureCookie)
 
   return signatureCookie
 }
@@ -43,7 +43,7 @@ export const setSignatureCookie = (signature: string) => {
 export const getSignatureCookie = (string: string) => {
   const signature = cookie.parse(string).Signature
 
-  log('get-signature-cookie', string)
+  log('get-signature-cookie: "%s"', string)
 
   return signature
 }
@@ -68,7 +68,7 @@ export const verifyState = (state: string, signature: string) => {
     .digest()
     .equals(signatureBuffer)
 
-  log('verify-state valid: %s state: "%s" signature: "%s"', isStateValid, state, signature)
+  log('verify-state valid: "%s" state: "%s" signature: "%s"', isStateValid, state, signature)
 
   return isStateValid
 }
