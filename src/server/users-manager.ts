@@ -5,7 +5,7 @@ import { logger } from '../logger.js'
 
 interface User {
   username: string
-  credentialId: string | null
+  integrationId: string | null
 }
 
 const log = logger('user-manager')
@@ -38,20 +38,20 @@ export const getUserCookie = (string: string) => {
 
 const client = new DynamoDBClient({})
 
-export const upsertUser = async (username: string, credentialId?: string): Promise<User> => {
-  log('upsert-user username: "%s" credentialId: "%s"', username, credentialId)
+export const upsertUser = async (username: string, integrationId?: string): Promise<User> => {
+  log('upsert-user username: "%s" integrationId: "%s"', username, integrationId)
 
   const result = await client.send(
     new UpdateItemCommand({
       TableName: USERS_TABLE_NAME,
       Key: { username: { S: username } },
       ReturnValues: 'ALL_NEW',
-      UpdateExpression: credentialId
-        ? 'SET credentialId = :credentialId, expiresIn = :expiresIn'
+      UpdateExpression: integrationId
+        ? 'SET integrationId = :integrationId, expiresIn = :expiresIn'
         : 'SET expiresIn = :expiresIn',
-      ExpressionAttributeValues: credentialId
+      ExpressionAttributeValues: integrationId
         ? {
-            ':credentialId': { S: credentialId },
+            ':integrationId': { S: integrationId },
             ':expiresIn': { N: '300' },
           }
         : {
@@ -64,12 +64,12 @@ export const upsertUser = async (username: string, credentialId?: string): Promi
 
   return {
     username: result.Attributes?.username?.S!,
-    credentialId: result.Attributes?.credentialId?.S || null,
+    integrationId: result.Attributes?.integrationId?.S || null,
   }
 }
 
-export const getUserCredentialId = async (username: string): Promise<string | null> => {
-  log('get-user-credential-id username: "%s"', username)
+export const getUserIntegrationId = async (username: string): Promise<string | null> => {
+  log('get-user-integration-id username: "%s"', username)
 
   const result = await client.send(
     new GetItemCommand({
@@ -78,7 +78,7 @@ export const getUserCredentialId = async (username: string): Promise<string | nu
     })
   )
 
-  log('get-user-credential-id result: %O', result)
+  log('get-user-integration-id result: %O', result)
 
-  return result.Item?.credentialId?.S || null
+  return result.Item?.integrationId?.S || null
 }

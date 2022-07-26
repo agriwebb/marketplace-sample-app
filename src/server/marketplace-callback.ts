@@ -1,4 +1,4 @@
-import { MARKETPLACE_CALLBACK_URL } from '../configuration-server.js'
+import { MARKETPLACE_CALLBACK_URI } from '../configuration-server.js'
 import { logger } from '../logger.js'
 import { fetchWithCredentialRefresh } from './fetch.js'
 
@@ -38,13 +38,16 @@ type MarketplaceCallbackResult<T extends string> = T extends 'integration-status
 const callMarketplaceCallback = async <
   T extends IntegrationStatusOptions | IntegrationErrorOptions
 >(
-  credentialId: string,
+  integrationId: string,
   options: T
 ): Promise<MarketplaceCallbackResult<T['type']>> => {
-  log('call marketplace callback: "%s" %O', credentialId, options)
+  log('call marketplace callback: "%s" %O', integrationId, options)
 
-  const response = await fetchWithCredentialRefresh(credentialId, MARKETPLACE_CALLBACK_URL, {
+  const response = await fetchWithCredentialRefresh(integrationId, MARKETPLACE_CALLBACK_URI, {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+    },
     body: JSON.stringify(options),
   })
 
@@ -56,24 +59,24 @@ const callMarketplaceCallback = async <
 }
 
 export const reportIntegrationStatus = async (
-  credentialId: string,
+  integrationId: string,
   status: IntegrationStatusOptions['data']['status']
 ): Promise<IntegrationStatusResult['data']> => {
-  log('report integration status: "%s" "%s"', credentialId, status)
+  log('report integration status: "%s" "%s"', integrationId, status)
 
-  return callMarketplaceCallback(credentialId, {
+  return callMarketplaceCallback(integrationId, {
     type: 'integration-status',
     data: { status },
   })
 }
 
 export const reportIntegrationError = async (
-  credentialId: string,
+  integrationId: string,
   data: IntegrationErrorOptions['data']
 ): Promise<void> => {
-  log('report integration error: "%s" %O', credentialId, data)
+  log('report integration error: "%s" %O', integrationId, data)
 
-  return callMarketplaceCallback(credentialId, {
+  return callMarketplaceCallback(integrationId, {
     type: 'integration-error',
     data,
   })

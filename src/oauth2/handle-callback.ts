@@ -10,11 +10,12 @@
   https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.2
 */
 import { type APIGatewayProxyHandler, type APIGatewayProxyResult } from 'aws-lambda'
-import 'isomorphic-fetch'
 import { v4 as uuid } from 'uuid'
-import { CREDENTIALS_URI } from '../configuration-server.js'
+import { FARM_LIST_URI } from '../configuration-server.js'
 import { logger } from '../logger.js'
 import { handleLoginRedirect } from '../server/handle-login.js'
+import { setIntegration } from '../server/integrations.js'
+import { reportIntegrationStatus } from '../server/marketplace-callback.js'
 import { getUserCookie, upsertUser } from '../server/users-manager.js'
 import { OAuth2Error, renderError } from '../views/error.js'
 import { getSignatureCookie, verifyState } from './state-manager.js'
@@ -35,7 +36,7 @@ export const handleCallbackRequest: APIGatewayProxyHandler = async (
       return handleLoginRedirect(event)
     }
 
-    const credentialId = uuid()
+    const integrationId = uuid()
 
     const state = event.queryStringParameters?.state
     const signature = getSignatureCookie(event.headers.cookie || event.headers.Cookie || '')
@@ -52,13 +53,15 @@ export const handleCallbackRequest: APIGatewayProxyHandler = async (
     }
 
     if (event.queryStringParameters?.code) {
-      await exchangeAuthorisationCode(credentialId, event.queryStringParameters.code)
-      await upsertUser(username, credentialId)
+      await exchangeAuthorisationCode(integrationId, event.queryStringParameters.code)
+      await upsertUser(username, integrationId)
+      const result = await reportIntegrationStatus(integrationId, 'functional')
+      await setIntegration({ integrationId, ...result })
 
       return {
         statusCode: 301,
         headers: {
-          Location: CREDENTIALS_URI,
+          Location: FARM_LIST_URI,
         },
         body: '',
       }

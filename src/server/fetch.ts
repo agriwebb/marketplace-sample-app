@@ -1,3 +1,4 @@
+import 'isomorphic-fetch'
 import { logger } from '../logger.js'
 import { exchangeRefreshToken } from '../oauth2/token-exchange.js'
 import { getAuthorizationHeader, getRefreshToken } from './credentials.js'
@@ -17,7 +18,7 @@ const addAuthorisationHeader = (request: Request, authorisation: string): Reques
 }
 
 export const fetchWithCredentials = async (
-  credentialId: string,
+  integrationId: string,
   input: RequestInfo,
   init?: RequestInit
 ): Promise<Response> => {
@@ -25,12 +26,12 @@ export const fetchWithCredentials = async (
 
   log(
     'fetch with credentials: "%s" for request: "%s" "%s"',
-    credentialId,
+    integrationId,
     request.method,
     request.url
   )
 
-  const authorisation = await getAuthorizationHeader(credentialId)
+  const authorisation = await getAuthorizationHeader(integrationId)
   if (!authorisation) {
     return new Response(undefined, { status: 401 })
   }
@@ -39,33 +40,38 @@ export const fetchWithCredentials = async (
 }
 
 const useRefreshToken = async (
-  credentialId: string,
+  integrationId: string,
   request: Request,
   response: Response
 ): Promise<Response> => {
   if (response.status === 401) {
-    log('use refresh token: "%s" for request: "%s" "%s"', credentialId, request.method, request.url)
+    log(
+      'use refresh token: "%s" for request: "%s" "%s"',
+      integrationId,
+      request.method,
+      request.url
+    )
 
-    const refreshToken = await getRefreshToken(credentialId)
+    const refreshToken = await getRefreshToken(integrationId)
 
     if (!refreshToken) {
       return response
     }
 
     try {
-      await exchangeRefreshToken(credentialId, refreshToken)
+      await exchangeRefreshToken(integrationId, refreshToken)
     } catch {
       return response
     }
 
-    return fetchWithCredentials(credentialId, request)
+    return fetchWithCredentials(integrationId, request)
   }
 
   return response
 }
 
 export const fetchWithCredentialRefresh = async (
-  credentialId: string,
+  integrationId: string,
   input: RequestInfo,
   init?: RequestInit
 ): Promise<Response> => {
@@ -73,12 +79,12 @@ export const fetchWithCredentialRefresh = async (
 
   log(
     'fetch with credential refresh: "%s" for request: "%s" "%s"',
-    credentialId,
+    integrationId,
     request.method,
     request.url
   )
 
-  return fetchWithCredentials(credentialId, request).then((response) =>
-    useRefreshToken(credentialId, request, response)
+  return fetchWithCredentials(integrationId, request).then((response) =>
+    useRefreshToken(integrationId, request, response)
   )
 }

@@ -13,15 +13,15 @@ const log = logger('credentials')
 const client = new DynamoDBClient({})
 
 export const setCredentials = async (
-  credentialId: string,
+  integrationId: string,
   credentials: Credentials
 ): Promise<void> => {
-  log('set credentials: "%s" %O', credentialId, credentials)
+  log('set credentials: "%s" %O', integrationId, credentials)
 
   await client.send(
     new UpdateItemCommand({
       TableName: ACCESS_TOKEN_TABLE_NAME,
-      Key: { credentialId: { S: credentialId } },
+      Key: { integrationId: { S: integrationId } },
       ReturnValues: 'ALL_NEW',
       UpdateExpression:
         'SET tokenType = :token_type, accessToken = :access_token, expiresIn = :expires_in',
@@ -37,7 +37,7 @@ export const setCredentials = async (
     await client.send(
       new UpdateItemCommand({
         TableName: REFRESH_TOKEN_TABLE_NAME,
-        Key: { credentialId: { S: credentialId } },
+        Key: { integrationId: { S: integrationId } },
         ReturnValues: 'ALL_NEW',
         UpdateExpression: 'SET refreshToken = :refresh_token',
         ExpressionAttributeValues: {
@@ -48,35 +48,35 @@ export const setCredentials = async (
   }
 }
 
-export const deleteAccessToken = async (credentialId: string): Promise<void> => {
-  log('delete access token: "%s"', credentialId)
+export const deleteAccessToken = async (integrationId: string): Promise<void> => {
+  log('delete access token: "%s"', integrationId)
 
   await client.send(
     new DeleteItemCommand({
       TableName: ACCESS_TOKEN_TABLE_NAME,
-      Key: { credentialId: { S: credentialId } },
+      Key: { integrationId: { S: integrationId } },
     })
   )
 }
 
-export const deleteRefreshToken = async (credentialId: string): Promise<void> => {
-  log('delete refresh token: %s', credentialId)
+export const deleteRefreshToken = async (integrationId: string): Promise<void> => {
+  log('delete refresh token: %s', integrationId)
 
   await client.send(
     new DeleteItemCommand({
       TableName: REFRESH_TOKEN_TABLE_NAME,
-      Key: { credentialId: { S: credentialId } },
+      Key: { integrationId: { S: integrationId } },
     })
   )
 }
 
-export const getAuthorizationHeader = async (credentialId: string): Promise<string | null> => {
-  log('get authorization header: "%s"', credentialId)
+export const getAuthorizationHeader = async (integrationId: string): Promise<string | null> => {
+  log('get authorization header: "%s"', integrationId)
 
   const result = await client.send(
     new GetItemCommand({
       TableName: ACCESS_TOKEN_TABLE_NAME,
-      Key: { credentialId: { S: credentialId } },
+      Key: { integrationId: { S: integrationId } },
     })
   )
 
@@ -91,13 +91,13 @@ export const getAuthorizationHeader = async (credentialId: string): Promise<stri
   return authorisation
 }
 
-export const getRefreshToken = async (credentialId: string): Promise<string | null> => {
-  log('get refresh token: "%s"', credentialId)
+export const getRefreshToken = async (integrationId: string): Promise<string | null> => {
+  log('get refresh token: "%s"', integrationId)
 
   const result = await client.send(
     new GetItemCommand({
       TableName: REFRESH_TOKEN_TABLE_NAME,
-      Key: { credentialId: { S: credentialId } },
+      Key: { integrationId: { S: integrationId } },
     })
   )
 

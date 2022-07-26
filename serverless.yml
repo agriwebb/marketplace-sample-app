@@ -1,6 +1,6 @@
 frameworkVersion: '3'
 
-service: third-party-integration-example
+service: agriwebb-marketplace-sample-app
 
 plugins:
   - serverless-esbuild
@@ -20,6 +20,7 @@ provider:
   region: ap-southeast-2
   environment:
     USERS_TABLE_NAME: !Ref UsersTable
+    INTEGRATION_TABLE_NAME: !Ref IntegrationTable
     ACCESS_TOKEN_TABLE_NAME: !Ref AccessTokenTable
     REFRESH_TOKEN_TABLE_NAME: !Ref RefreshTokenTable
     BASE_URL:
@@ -37,6 +38,14 @@ provider:
             - dynamodb:UpdateItem
           Resource: !GetAtt
             - UsersTable
+            - Arn
+        - Effect: Allow
+          Action:
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: !GetAtt
+            - IntegrationTable
             - Arn
         - Effect: Allow
           Action:
@@ -80,6 +89,13 @@ functions:
           method: GET
           path: /app/credentials
 
+  ServerFarmList:
+    handler: src/server/handle-farm-list.handleFarmListRequest
+    events:
+      - http:
+          method: GET
+          path: /app/farms
+
   OAuth2Install:
     handler: src/oauth2/handle-install.handleInstallRequest
     events:
@@ -102,7 +118,7 @@ resources:
         AttributeDefinitions:
           - AttributeName: username
             AttributeType: S
-          # - AttributeName: credentialId
+          # - AttributeName: integrationId
           #   AttributeType: S
           # - AttributeName: expiresIn
           #   AttributeType: N
@@ -114,11 +130,26 @@ resources:
           AttributeName: expiresIn
           Enabled: true
 
+    IntegrationTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: integrationId
+            AttributeType: S
+          # - AttributeName: redirectURL
+          #   AttributeType: S
+          # - AttributeName: allowedFarmIds
+          #   AttributeType: S
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: integrationId
+            KeyType: HASH
+
     AccessTokenTable:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
-          - AttributeName: credentialId
+          - AttributeName: integrationId
             AttributeType: S
           # - AttributeName: tokenType
           #   AttributeType: S
@@ -128,7 +159,7 @@ resources:
           #   AttributeType: N
         BillingMode: PAY_PER_REQUEST
         KeySchema:
-          - AttributeName: credentialId
+          - AttributeName: integrationId
             KeyType: HASH
         SSESpecification:
           SSEEnabled: true
@@ -140,13 +171,13 @@ resources:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
-          - AttributeName: credentialId
+          - AttributeName: integrationId
             AttributeType: S
           # - AttributeName: refreshToken
           #   AttributeType: S
         BillingMode: PAY_PER_REQUEST
         KeySchema:
-          - AttributeName: credentialId
+          - AttributeName: integrationId
             KeyType: HASH
         SSESpecification:
           SSEEnabled: true

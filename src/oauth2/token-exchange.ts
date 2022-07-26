@@ -9,6 +9,7 @@
   ...
 */
 
+import 'isomorphic-fetch'
 import { CLIENT_ID, CLIENT_SECRET, OAUTH_SERVER_TOKEN_URL } from '../configuration-oauth2'
 import { REDIRECT_URI } from '../configuration-server.js'
 import { logger } from '../logger.js'
@@ -79,7 +80,7 @@ const callTokenExchange = async (
 }
 
 export const exchangeAuthorisationCode = async (
-  credentialId: string,
+  integrationId: string,
   code: string
 ): Promise<Credentials> => {
   const credentials = await callTokenExchange({
@@ -89,13 +90,13 @@ export const exchangeAuthorisationCode = async (
     client_id: CLIENT_ID,
   })
 
-  await setCredentials(credentialId, credentials)
+  await setCredentials(integrationId, credentials)
 
   return credentials
 }
 
 export const exchangeRefreshToken = async (
-  credentialId: string,
+  integrationId: string,
   refreshToken: string
 ): Promise<Credentials> => {
   const credentials = await callTokenExchange({
@@ -103,7 +104,7 @@ export const exchangeRefreshToken = async (
     refresh_token: refreshToken,
   })
 
-  await setCredentials(credentialId, credentials)
+  await setCredentials(integrationId, credentials)
 
   return credentials
 }

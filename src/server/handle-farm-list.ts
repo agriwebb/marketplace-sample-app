@@ -1,13 +1,14 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import { logger } from '../logger.js'
-import { renderCredentials } from '../views/credentials.js'
-import { getAuthorizationHeader, getRefreshToken } from './credentials.js'
+import { renderFarms } from '../views/farms.js'
+import { getFarms } from './agriwebb-v2-api.js'
 import { handleUnauthorised } from './handle-unauthorised.js'
+import { getIntegration } from './integrations.js'
 import { getUserCookie, getUserIntegrationId } from './users-manager.js'
 
-const log = logger('handle-credentials')
+const log = logger('handle-farms-list')
 
-export const handleCredentialsRequest = async (
+export const handleFarmListRequest = async (
   event: Pick<APIGatewayProxyEvent, 'path' | 'queryStringParameters' | 'headers'>
 ): Promise<APIGatewayProxyResult> => {
   log('query string parameters: %O', event.queryStringParameters)
@@ -25,16 +26,15 @@ export const handleCredentialsRequest = async (
     return handleUnauthorised(event)
   }
 
-  const [authorisation, refreshToken] = await Promise.all([
-    getAuthorizationHeader(integrationId),
-    getRefreshToken(integrationId),
-  ])
+  const integration = await getIntegration(integrationId)
+
+  const farms = await getFarms(integrationId, integration?.allowedFarmIds || [])
 
   return {
     statusCode: 200,
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
     },
-    body: renderCredentials(authorisation, refreshToken),
+    body: renderFarms({ farms }),
   }
 }
