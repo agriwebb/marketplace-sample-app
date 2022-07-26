@@ -13,8 +13,10 @@
   ...
 */
 
-import { type APIGatewayProxyHandler } from 'aws-lambda'
-import { CLIENT_ID, OAUTH_SERVER_AUTHORIZE_URL, REDIRECT_URI, SCOPE } from '../configuration.js'
+import { APIGatewayProxyEvent } from 'aws-lambda'
+import { CLIENT_ID, OAUTH_SERVER_AUTHORIZE_URL } from '../configuration-oauth2.js'
+import { REDIRECT_URI, SCOPE } from '../configuration-server.js'
+import { createHandler } from '../create-handler.js'
 import { logger } from '../logger.js'
 import { createState, setSignatureCookie } from './state-manager.js'
 
@@ -40,17 +42,18 @@ export const handleInstall = async (
   return { signature, location: url.href }
 }
 
-export const handleInstallRequest: APIGatewayProxyHandler = async (event) => {
-  log('query string parameters: %O', event.queryStringParameters)
+export const handleInstallRequest = createHandler(
+  log,
+  async (event: Pick<APIGatewayProxyEvent, 'queryStringParameters'>) => {
+    const { signature, location } = await handleInstall(event.queryStringParameters?.organization)
 
-  const { signature, location } = await handleInstall(event.queryStringParameters?.organization)
-
-  return {
-    statusCode: 302,
-    headers: {
-      Location: location,
-      'Set-Cookie': setSignatureCookie(signature),
-    },
-    body: '',
+    return {
+      statusCode: 302,
+      headers: {
+        Location: location,
+        'Set-Cookie': setSignatureCookie(signature),
+      },
+      body: '',
+    }
   }
-}
+)

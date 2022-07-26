@@ -1,4 +1,4 @@
-# Third-Party Integration Example
+# AgriWebb Marketplace Sample App
 
 ## Table of Contents
 

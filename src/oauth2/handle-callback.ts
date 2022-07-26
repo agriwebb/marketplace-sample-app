@@ -9,65 +9,81 @@
   For more information on the callback endpoint, see section 4.1.2 in RFC6749
   https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.2
 */
-import { type APIGatewayProxyHandler, type APIGatewayProxyResult } from 'aws-lambda'
-import 'isomorphic-fetch'
+import { APIGatewayProxyEvent, type APIGatewayProxyResult } from 'aws-lambda'
+import { v4 as uuid } from 'uuid'
+import { createHandler } from '../create-handler.js'
 import { logger } from '../logger.js'
-import { renderAccessToken } from '../views/access-token.js'
+import { handleLoginRedirect } from '../server/handle-login.js'
+import { setIntegration } from '../server/integrations.js'
+import { reportIntegrationStatus } from '../server/marketplace-callback.js'
+import { getUserCookie, upsertUser } from '../server/users-manager.js'
 import { OAuth2Error, renderError } from '../views/error.js'
 import { getSignatureCookie, verifyState } from './state-manager.js'
 import { exchangeAuthorisationCode } from './token-exchange.js'
 
 const log = logger('handle-callback')
 
-export const handleCallbackRequest: APIGatewayProxyHandler = async (
-  event
-): Promise<APIGatewayProxyResult> => {
-  try {
-    log('query string parameters: %O', event.queryStringParameters)
-    log('headers: %O', event.headers)
+export const handleCallbackRequest = createHandler(
+  log,
+  async (
+    event: Pick<APIGatewayProxyEvent, 'path' | 'queryStringParameters' | 'headers'>
+  ): Promise<APIGatewayProxyResult> => {
+    try {
+      const username = getUserCookie(event.headers.cookie || event.headers.Cookie || '')
 
-    const state = event.queryStringParameters?.state
-    const signature = getSignatureCookie(event.headers.cookie || event.headers.Cookie || '')
-    const isStateValid = state && signature && verifyState(state, signature)
+      if (!username) {
+        return handleLoginRedirect(event)
+      }
 
-    if (!isStateValid) {
+      const integrationId = uuid()
+
+      const state = event.queryStringParameters?.state
+      const signature = getSignatureCookie(event.headers.cookie || event.headers.Cookie || '')
+      const isStateValid = state && signature && verifyState(state, signature)
+
+      if (!isStateValid) {
+        return {
+          statusCode: 400,
+          headers: {
+            'Content-Type': 'text/html; charset=utf-8',
+          },
+          body: renderError(new OAuth2Error('invalid_state', 'Invalid state parameter')),
+        }
+      }
+
+      if (event.queryStringParameters?.code) {
+        await exchangeAuthorisationCode(integrationId, event.queryStringParameters.code)
+        await upsertUser(username, integrationId)
+        const { redirectURL, allowedFarmIds } = await reportIntegrationStatus(
+          integrationId,
+          'functional'
+        )
+        await setIntegration({ integrationId, allowedFarmIds })
+
+        return {
+          statusCode: 302,
+          headers: {
+            Location: redirectURL,
+          },
+          body: '',
+        }
+      } else {
+        throw new OAuth2Error(
+          event.queryStringParameters?.error,
+          event.queryStringParameters?.error_description,
+          event.queryStringParameters?.error_uri
+        )
+      }
+    } catch (error) {
+      log('error: %O', error)
+
       return {
-        statusCode: 400,
+        statusCode: error instanceof OAuth2Error && error.error === 'server_error' ? 500 : 400,
         headers: {
           'Content-Type': 'text/html; charset=utf-8',
         },
-        body: renderError(new OAuth2Error('invalid_state', 'Invalid state parameter')),
+        body: renderError(error),
       }
-    }
-
-    if (event.queryStringParameters?.code) {
-      const { access_token, token_type, refresh_token } = await exchangeAuthorisationCode(
-        event.queryStringParameters.code
-      )
-
-      return {
-        statusCode: 200,
-        headers: {
-          'Content-Type': 'text/html; charset=utf-8',
-        },
-        body: renderAccessToken({ access_token, token_type, refresh_token }),
-      }
-    } else {
-      throw new OAuth2Error(
-        event.queryStringParameters?.error,
-        event.queryStringParameters?.error_description,
-        event.queryStringParameters?.error_uri
-      )
-    }
-  } catch (error) {
-    log('error: %O', error)
-
-    return {
-      statusCode: error instanceof OAuth2Error && error.error === 'server_error' ? 500 : 400,
-      headers: {
-        'Content-Type': 'text/html; charset=utf-8',
-      },
-      body: renderError(error),
     }
   }
-}
+)

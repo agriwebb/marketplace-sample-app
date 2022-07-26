@@ -1,14 +1,16 @@
 {
-  "name": "third-party-integration-example",
+  "name": "@agriwebb/marketplace-sample-app",
   "type": "commonjs",
   "scripts": {
     "start": "serverless offline"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.131.0",
     "base64url": "^3.0.1",
     "cookie": "^0.5.0",
     "debug": "^4.3.4",
-    "isomorphic-fetch": "^3.0.0"
+    "isomorphic-fetch": "^3.0.0",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.98",
@@ -16,6 +18,7 @@
     "@types/debug": "^4.1.7",
     "@types/isomorphic-fetch": "^0.0.36",
     "@types/node": "^16.11.39",
+    "@types/uuid": "^8.3.4",
     "concurrently": "^7.0.0",
     "nodemon": "^2.0.15",
     "serverless": "^3.19.0",

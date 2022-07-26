@@ -1,6 +1,6 @@
 frameworkVersion: '3'
 
-service: third-party-integration-example
+service: agriwebb-marketplace-sample-app
 
 plugins:
   - serverless-esbuild
@@ -17,29 +17,180 @@ custom:
 provider:
   name: aws
   runtime: nodejs16.x
+  timeout: 30
   region: ap-southeast-2
   environment:
+    USERS_TABLE_NAME: !Ref UsersTable
+    INTEGRATION_TABLE_NAME: !Ref IntegrationTable
+    ACCESS_TOKEN_TABLE_NAME: !Ref AccessTokenTable
+    REFRESH_TOKEN_TABLE_NAME: !Ref RefreshTokenTable
     BASE_URL:
       Fn::Join:
         - ''
         - - https://
           - Ref: ApiGatewayRestApi
-          - .execute-api.${opt:region, self:provider.region}.amazonaws.com/${sls:stage}/
+          - .execute-api.${aws:region}.amazonaws.com/${sls:stage}/
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+          Resource: !GetAtt
+            - UsersTable
+            - Arn
+        - Effect: Allow
+          Action:
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: !GetAtt
+            - IntegrationTable
+            - Arn
+        - Effect: Allow
+          Action:
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: !GetAtt
+            - AccessTokenTable
+            - Arn
+        - Effect: Allow
+          Action:
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: !GetAtt
+            - RefreshTokenTable
+            - Arn
 
 package:
   individually: true
 
 functions:
-  oauth2-install:
+  ServerGetLogin:
+    handler: src/server/handle-login.handleGetLoginRequest
+    events:
+      - http:
+          method: GET
+          path: /login
+
+  ServerGetLogout:
+    handler: src/server/handle-logout.handleGetLogoutRequest
+    events:
+      - http:
+          method: GET
+          path: /logout
+
+  ServerPostLogin:
+    handler: src/server/handle-login.handlePostLoginRequest
+    events:
+      - http:
+          method: POST
+          path: /login
+
+  ServerHome:
+    handler: src/server/handle-home.handleHomeRequest
+    events:
+      - http:
+          method: GET
+          path: /app
+
+  ServerCredentials:
+    handler: src/server/handle-credentials.handleCredentialsRequest
+    events:
+      - http:
+          method: GET
+          path: /app/credentials
+
+  ServerFarmList:
+    handler: src/server/handle-farm-list.handleFarmListRequest
+    events:
+      - http:
+          method: GET
+          path: /app/farms
+
+  OAuth2Install:
     handler: src/oauth2/handle-install.handleInstallRequest
     events:
       - http:
           method: GET
           path: /install
 
-  oauth2-callback:
+  OAuth2Callback:
     handler: src/oauth2/handle-callback.handleCallbackRequest
     events:
       - http:
           method: GET
           path: /callback
+
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: username
+            AttributeType: S
+          # - AttributeName: integrationId
+          #   AttributeType: S
+          # - AttributeName: expiresIn
+          #   AttributeType: N
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: username
+            KeyType: HASH
+        TimeToLiveSpecification:
+          AttributeName: expiresIn
+          Enabled: true
+
+    IntegrationTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: integrationId
+            AttributeType: S
+          # - AttributeName: allowedFarmIds
+          #   AttributeType: S
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: integrationId
+            KeyType: HASH
+
+    AccessTokenTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: integrationId
+            AttributeType: S
+          # - AttributeName: tokenType
+          #   AttributeType: S
+          # - AttributeName: accessToken
+          #   AttributeType: S
+          # - AttributeName: expiresIn
+          #   AttributeType: N
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: integrationId
+            KeyType: HASH
+        SSESpecification:
+          SSEEnabled: true
+        TimeToLiveSpecification:
+          AttributeName: expiresIn
+          Enabled: true
+
+    RefreshTokenTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: integrationId
+            AttributeType: S
+          # - AttributeName: refreshToken
+          #   AttributeType: S
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: integrationId
+            KeyType: HASH
+        SSESpecification:
+          SSEEnabled: true

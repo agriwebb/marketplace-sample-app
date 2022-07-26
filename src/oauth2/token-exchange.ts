@@ -9,20 +9,40 @@
   ...
 */
 
-import { CLIENT_ID, CLIENT_SECRET, OAUTH_SERVER_TOKEN_URL, REDIRECT_URI } from '../configuration.js'
+import 'isomorphic-fetch'
+import { CLIENT_ID, CLIENT_SECRET, OAUTH_SERVER_TOKEN_URL } from '../configuration-oauth2.js'
+import { REDIRECT_URI } from '../configuration-server.js'
 import { logger } from '../logger.js'
+import { setCredentials } from '../server/credentials'
 import { OAuth2Error } from '../views/error.js'
 
-const log = logger('get-access-token')
+const log = logger('token-exchange')
 
-export interface AccessToken {
+interface AuthorisationCodeExchange {
+  grant_type: 'authorization_code'
+  code: string
+  redirect_uri?: string
+  client_id?: string
+}
+
+interface RefreshTokenExchange {
+  grant_type: 'refresh_token'
+  refresh_token: string
+  scope?: string
+}
+
+export interface Credentials {
   access_token: string
   token_type: string
   expires_in?: number
   refresh_token?: string
 }
 
-const getAccessToken = async (searchParams: URLSearchParams): Promise<AccessToken> => {
+const callTokenExchange = async (
+  options: AuthorisationCodeExchange | RefreshTokenExchange
+): Promise<Credentials> => {
+  const searchParams = new URLSearchParams(options as unknown as Record<string, string>)
+
   const response = await fetch(OAUTH_SERVER_TOKEN_URL, {
     method: 'POST',
     headers: {
@@ -37,7 +57,7 @@ const getAccessToken = async (searchParams: URLSearchParams): Promise<AccessToke
   if (!response.ok) {
     try {
       const body = await response.text()
-      log('error response: %s', body)
+      log('error response: "%s"', body)
       const json = JSON.parse(body)
       throw new OAuth2Error(json.error, json.error_description, json.error_uri)
     } catch (error) {
@@ -59,22 +79,32 @@ const getAccessToken = async (searchParams: URLSearchParams): Promise<AccessToke
   return { access_token, token_type, expires_in, refresh_token }
 }
 
-export const exchangeAuthorisationCode = async (code: string): Promise<AccessToken> => {
-  const searchParams = new URLSearchParams()
+export const exchangeAuthorisationCode = async (
+  integrationId: string,
+  code: string
+): Promise<Credentials> => {
+  const credentials = await callTokenExchange({
+    grant_type: 'authorization_code',
+    code,
+    redirect_uri: REDIRECT_URI,
+    client_id: CLIENT_ID,
+  })
 
-  searchParams.set('grant_type', 'authorization_code')
-  searchParams.set('code', code)
-  searchParams.set('redirect_uri', REDIRECT_URI)
-  searchParams.set('client_id', CLIENT_ID)
+  await setCredentials(integrationId, credentials)
 
-  return getAccessToken(searchParams)
+  return credentials
 }
 
-export const exchangeRefreshToken = async (refreshToken: string): Promise<AccessToken> => {
-  const searchParams = new URLSearchParams()
+export const exchangeRefreshToken = async (
+  integrationId: string,
+  refreshToken: string
+): Promise<Credentials> => {
+  const credentials = await callTokenExchange({
+    grant_type: 'refresh_token',
+    refresh_token: refreshToken,
+  })
 
-  searchParams.set('grant_type', 'refresh_token')
-  searchParams.set('refresh_token', refreshToken)
+  await setCredentials(integrationId, credentials)
 
-  return getAccessToken(searchParams)
+  return credentials
 }
