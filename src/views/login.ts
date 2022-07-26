@@ -1,4 +1,4 @@
-import { renderHtml } from './html'
+import { renderHtml } from './html.js'
 
 interface RenderLoginOptions {
   error?: string

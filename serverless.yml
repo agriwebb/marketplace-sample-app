@@ -17,6 +17,7 @@ custom:
 provider:
   name: aws
   runtime: nodejs16.x
+  timeout: 30
   region: ap-southeast-2
   environment:
     USERS_TABLE_NAME: !Ref UsersTable
@@ -75,12 +76,26 @@ functions:
           method: GET
           path: /login
 
+  ServerGetLogout:
+    handler: src/server/handle-logout.handleGetLogoutRequest
+    events:
+      - http:
+          method: GET
+          path: /logout
+
   ServerPostLogin:
     handler: src/server/handle-login.handlePostLoginRequest
     events:
       - http:
           method: POST
           path: /login
+
+  ServerHome:
+    handler: src/server/handle-home.handleHomeRequest
+    events:
+      - http:
+          method: GET
+          path: /app
 
   ServerCredentials:
     handler: src/server/handle-credentials.handleCredentialsRequest
@@ -136,8 +151,6 @@ resources:
         AttributeDefinitions:
           - AttributeName: integrationId
             AttributeType: S
-          # - AttributeName: redirectURL
-          #   AttributeType: S
           # - AttributeName: allowedFarmIds
           #   AttributeType: S
         BillingMode: PAY_PER_REQUEST

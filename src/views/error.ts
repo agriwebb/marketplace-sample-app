@@ -1,4 +1,4 @@
-import { renderHtml } from './html'
+import { renderHtml } from './html.js'
 
 export class OAuth2Error extends Error {
   constructor(

@@ -1,5 +1,5 @@
-import { Farm } from '../server/agriwebb-v2-api'
-import { renderHtml } from './html'
+import { Farm } from '../server/agriwebb-v2-api.js'
+import { renderHtml } from './html.js'
 
 interface RenderFarmsOptions {
   farms: Farm[]

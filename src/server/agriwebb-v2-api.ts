@@ -1,5 +1,5 @@
-import { AGRIWEBB_V2_API_URI } from '../configuration-server'
-import { fetchWithCredentialRefresh } from './fetch'
+import { AGRIWEBB_V2_API_URI } from '../configuration-server.js'
+import { fetchWithCredentialRefresh } from './fetch.js'
 
 export interface Farm {
   id: string

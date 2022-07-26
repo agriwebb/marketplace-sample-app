@@ -13,7 +13,6 @@ const client = new DynamoDBClient({})
 
 interface Integration {
   integrationId: string
-  redirectURL: string
   allowedFarmIds: string[]
 }
 
@@ -25,9 +24,8 @@ export const setIntegration = async (integration: Integration): Promise<void> =>
       TableName: INTEGRATION_TABLE_NAME,
       Key: { integrationId: { S: integration.integrationId } },
       ReturnValues: 'ALL_NEW',
-      UpdateExpression: 'SET redirectURL = :redirectURL, allowedFarmIds = :allowedFarmIds',
+      UpdateExpression: 'SET allowedFarmIds = :allowedFarmIds',
       ExpressionAttributeValues: {
-        ':redirectURL': { S: integration.redirectURL },
         ':allowedFarmIds': { S: integration.allowedFarmIds.join(',') },
       },
     })
@@ -44,13 +42,12 @@ export const getIntegration = async (integrationId: string): Promise<Integration
     })
   )
 
-  if (!result.Item?.redirectURL?.S || !result.Item?.allowedFarmIds?.S) {
+  if (!result.Item?.allowedFarmIds?.S) {
     return null
   }
 
   return {
     integrationId: integrationId,
-    redirectURL: result.Item.redirectURL.S,
     allowedFarmIds: result.Item.allowedFarmIds.S.split(',').filter(Boolean),
   }
 }

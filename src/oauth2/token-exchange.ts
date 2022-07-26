@@ -10,7 +10,7 @@
 */
 
 import 'isomorphic-fetch'
-import { CLIENT_ID, CLIENT_SECRET, OAUTH_SERVER_TOKEN_URL } from '../configuration-oauth2'
+import { CLIENT_ID, CLIENT_SECRET, OAUTH_SERVER_TOKEN_URL } from '../configuration-oauth2.js'
 import { REDIRECT_URI } from '../configuration-server.js'
 import { logger } from '../logger.js'
 import { setCredentials } from '../server/credentials'

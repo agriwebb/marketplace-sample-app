@@ -4,10 +4,14 @@ export const ACCESS_TOKEN_TABLE_NAME = process.env.ACCESS_TOKEN_TABLE_NAME
 export const REFRESH_TOKEN_TABLE_NAME = process.env.REFRESH_TOKEN_TABLE_NAME
 
 /*
+  Determine if the server is running in development mode.
+*/
+export const IS_DEVELOPMENT = process.env.IS_OFFLINE === 'true'
+
+/*
   The base url the application is deployed at.
 */
-export const BASE_URL =
-  (process.env.IS_OFFLINE !== 'true' && process.env.BASE_URL) || 'http://localhost:4000/dev/'
+export const BASE_URL = (!IS_DEVELOPMENT && process.env.BASE_URL) || 'http://localhost:4000/dev/'
 
 /*
   This state manager secret is used in the verification of the state parameter.
@@ -41,6 +45,16 @@ export const REDIRECT_URI = new URL('./callback', BASE_URL).href
   The login route for the application.
 */
 export const LOGIN_URI = new URL('./login', BASE_URL).href
+
+/*
+  The logout route for the application.
+*/
+export const LOGOUT_URI = new URL('./logout', BASE_URL).href
+
+/*
+  The home route for the application.
+*/
+export const HOME_URI = new URL('./app', BASE_URL).href
 
 /*
   The credentials route for the application.

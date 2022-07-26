@@ -28,6 +28,24 @@ export const setUserCookie = (username: string) => {
   return userCookie
 }
 
+export const deleteUserCookie = () => {
+  const cookieOptions: CookieSerializeOptions = {
+    httpOnly: true,
+    maxAge: -1,
+    path: new URL(BASE_URL).pathname,
+    secure: true,
+    sameSite: 'lax',
+  }
+
+  log('cookie options: %O', cookieOptions)
+
+  const userCookie = cookie.serialize('User', '', cookieOptions)
+
+  log('delete-user-cookie: "%s"', userCookie)
+
+  return userCookie
+}
+
 export const getUserCookie = (string: string) => {
   const user = cookie.parse(string).User
 

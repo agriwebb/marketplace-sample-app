@@ -60,7 +60,8 @@ const useRefreshToken = async (
 
     try {
       await exchangeRefreshToken(integrationId, refreshToken)
-    } catch {
+    } catch (error) {
+      log('refresh token exchange failed: %O', error)
       return response
     }
 

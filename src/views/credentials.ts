@@ -1,7 +1,19 @@
 import { CLIENT_ID, CLIENT_SECRET } from '../configuration-oauth2.js'
+import { IS_DEVELOPMENT } from '../configuration-server.js'
 import { renderHtml } from './html.js'
 
 export const renderCredentials = (authorisation: string | null, refreshToken: string | null) => {
+  if (!IS_DEVELOPMENT) {
+    return renderHtml(`
+      <div class="max-w-sm">
+        <h1 class="my-4 text-2xl">Credentials</h1>
+        <p>
+         Credentials cannot be viewed in a deployed application, please run the application locally to expose the credentials for debugging purposes.
+        </p>
+      </div>
+    `)
+  }
+
   let authorisationButton = ''
   let refreshTokenButton = ''
 
@@ -28,12 +40,12 @@ export const renderCredentials = (authorisation: string | null, refreshToken: st
   }
 
   return renderHtml(`
-    <div class="max-w-prose">
-      <h1>Credentials</h1>
+    <div class="max-w-sm">
+      <h1 class="my-4 text-2xl">Credentials</h1>
       <p>
         The following credentials are only exposed for debugging purposes and should never be exposed at any point in time in a real application.
       </p>
-      <div class="flex flex-col gap-2 w-full max-w-xs">
+      <div class="flex flex-col gap-2 my-4 w-full">
         ${refreshTokenButton}
         <button
           class="border-2 rounded-md py-1 flex-auto"
