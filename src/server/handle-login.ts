@@ -74,7 +74,7 @@ export const handlePostLoginRequest = createHandler(
     const setCookie = setUserCookie(username)
 
     const location = new URL(
-      getRedirectCookie(event.headers.cookie || event.headers.Cookie || '') || './app/',
+      getRedirectCookie(event.headers.cookie || event.headers.Cookie || '') || './',
       BASE_URL
     ).href
 

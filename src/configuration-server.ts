@@ -54,17 +54,17 @@ export const LOGOUT_URI = new URL('./logout', BASE_URL).href
 /*
   The home route for the application.
 */
-export const HOME_URI = new URL('./app', BASE_URL).href
+export const HOME_URI = new URL('./', BASE_URL).href
 
 /*
   The credentials route for the application.
 */
-export const CREDENTIALS_URI = new URL('./app/credentials', BASE_URL).href
+export const CREDENTIALS_URI = new URL('./credentials', BASE_URL).href
 
 /*
   The credentials route for the application.
 */
-export const FARM_LIST_URI = new URL('./app/farms', BASE_URL).href
+export const FARM_LIST_URI = new URL('./farms', BASE_URL).href
 
 /*
   The scopes to request from the OAuth 2.0 server.
