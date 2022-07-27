@@ -1,4 +1,5 @@
 frameworkVersion: '3'
+useDotenv: true
 
 service: agriwebb-marketplace-sample-app
 
@@ -24,12 +25,7 @@ provider:
     INTEGRATION_TABLE_NAME: !Ref IntegrationTable
     ACCESS_TOKEN_TABLE_NAME: !Ref AccessTokenTable
     REFRESH_TOKEN_TABLE_NAME: !Ref RefreshTokenTable
-    BASE_URL:
-      Fn::Join:
-        - ''
-        - - https://
-          - Ref: ApiGatewayRestApi
-          - .execute-api.${aws:region}.amazonaws.com/${sls:stage}/
+    BASE_URL: https://${env:DOMAIN_NAME}/
   iam:
     role:
       statements:
@@ -95,21 +91,21 @@ functions:
     events:
       - http:
           method: GET
-          path: /app
+          path: /
 
   ServerCredentials:
     handler: src/server/handle-credentials.handleCredentialsRequest
     events:
       - http:
           method: GET
-          path: /app/credentials
+          path: /credentials
 
   ServerFarmList:
     handler: src/server/handle-farm-list.handleFarmListRequest
     events:
       - http:
           method: GET
-          path: /app/farms
+          path: /farms
 
   OAuth2Install:
     handler: src/oauth2/handle-install.handleInstallRequest
@@ -127,6 +123,37 @@ functions:
 
 resources:
   Resources:
+    DomainName:
+      Type: AWS::ApiGateway::DomainName
+      Properties:
+        DomainName: ${env:DOMAIN_NAME}
+        EndpointConfiguration:
+          Types:
+            - REGIONAL
+        SecurityPolicy: TLS_1_2
+        RegionalCertificateArn: ${ssm:/infrastructure/network/ioCertificateArn}
+
+    RecordSet:
+      Type: AWS::Route53::RecordSet
+      Properties:
+        HostedZoneId: ${ssm:/infrastructure/network/ioZoneId}
+        Name: ${env:DOMAIN_NAME}
+        Type: CNAME
+        TTL: 60
+        ResourceRecords:
+          - Fn::GetAtt:
+              - DomainName
+              - RegionalDomainName
+
+    BasePathMapping:
+      Type: AWS::ApiGateway::BasePathMapping
+      Properties:
+        DomainName: ${env:DOMAIN_NAME}
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        Stage: ${sls:stage}
+      DependsOn: DomainName
+
     UsersTable:
       Type: AWS::DynamoDB::Table
       Properties:
