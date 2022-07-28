@@ -46,7 +46,7 @@ export const renderHtml = (template: string) => {
         ${template}
         <footer class="absolute border-t flex flex-row p-4 bottom-0 w-full justify-center">
           <span>
-            <a class="underline" href="https://api.staging.agriwebb.com/docs">AgriWebb API Documentation</a>
+            <a class="underline" href="https://docs.staging.agriwebb.com/">AgriWebb API Documentation</a>
           </span>
         </footer>
       </body>
