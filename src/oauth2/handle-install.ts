@@ -11,7 +11,7 @@
   https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.1
 
   For more information about the install endpoint, please see the AgriWebb API
-  Documentation https://docs.staging.agriwebb.com/
+  Documentation https://docs.staging.agriwebb.io/
 */
 
 import { APIGatewayProxyEvent } from 'aws-lambda'

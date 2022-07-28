@@ -13,7 +13,7 @@
 
 ## Introduction
 
-The AgriWebb Marketplace supports the [OAuth 2.0 Authorisation Grant Flow](https://datatracker.ietf.org/doc/html/rfc6749#section-4.1); this sample app demonstrates how a server-side rendered application can integrate with the AgriWebb Marketplace. You can try out this sample app at the following link [marketplace-sample-app.playground.agriwebb.io](https://marketplace-sample-app.playground.agriwebb.io/). This app will go through the integration process and displays a list of allowed farms after you have completed the integration. To learn more, please see the [AgriWebb API Documentation](https://docs.staging.agriwebb.com/).
+The AgriWebb Marketplace supports the [OAuth 2.0 Authorisation Grant Flow](https://datatracker.ietf.org/doc/html/rfc6749#section-4.1); this sample app demonstrates how a server-side rendered application can integrate with the AgriWebb Marketplace. You can try out this sample app at the following link [marketplace-sample-app.playground.agriwebb.io](https://marketplace-sample-app.playground.agriwebb.io/). This app will go through the integration process and displays a list of allowed farms after you have completed the integration. To learn more, please see the [AgriWebb API Documentation](https://docs.staging.agriwebb.io/).
 
 ## Architecture
 
