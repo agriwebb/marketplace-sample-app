@@ -1,12 +1,16 @@
 /*
-  The token exchange endpoint is used to exchange an authorization code for an
-  access token and a refresh token, or to exchange a refresh token for an access
-  token and a new refresh token.
+  The token exchange process allows the sample app (OAuth 2.0 Client) to use
+  different exchange processes to obtain an `access_token` and other related
+  tokens. At the time of writing this, we support two token exchange types; 
+  authorization_code` and `refresh_token`. To authenticate during the token
+  exchange, you must perform Client Authentication using The Basic Authorisation
+  Scheme with the provided `client_id` and `client_secret` as the username and
+  password. 
 
   For more information regarding the token exchange endpoint, please see
   https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.3
   https://datatracker.ietf.org/doc/html/rfc6749#section-6
-  ...
+  https://datatracker.ietf.org/doc/html/rfc6749#section-3.2.1
 */
 
 import 'isomorphic-fetch'

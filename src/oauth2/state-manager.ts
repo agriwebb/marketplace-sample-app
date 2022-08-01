@@ -1,17 +1,21 @@
 /*
-  The state parameter is vital for preventing Cross-Site Request Forgery (CSRF).
-  It needs to be non-guessable and stored in a location accessible only to the
-  client and the user-agent (i.e., protected by same-origin policy).
-
-  This implementation generates a cryptographically random state parameter. It
-  utilizes an expiring "same-site" cookie to store an encrypted signature of the
-  state for verification.
+  The state manager is a collection of utility functions for working with the
+  state parameter, which is vital for preventing Cross-Site Request Forgery
+  (CSRF). It must be non-guessable and stored in a location accessible only to
+  the client and the user-agent (i.e., protected by same-origin policy). The
+  state manager's implementation generates a cryptographically random state
+  parameter and an HMAC-SHA256 signature. It utilizes an expiring "same-site"
+  cookie to store the state's signature for verification on the callback
+  endpoint.
 
   For more information regarding CSRF, please see section 10.12 in RFC6749
   https://datatracker.ietf.org/doc/html/rfc6749#section-10.12
 
   For more information regarding "same-site" cookies please see
   https://web.dev/samesite-cookies-explained/
+
+  For more information regarding the state parameter please see Auth0's
+  documentation https://auth0.com/docs/secure/attack-protection/state-parameters
 */
 
 import base64url from 'base64url'
