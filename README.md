@@ -19,6 +19,40 @@ The AgriWebb Marketplace supports the [OAuth 2.0 Authorisation Grant Flow](https
 
 This sample app is a serverless project built on AWS Lambda and DynamoDB. The app is structured into three main folders, [oauth2](./src/oauth2), [server](./src/server), and [views](./src/views). The [oauth2](./src/oauth2) folder contains all the related authorisation logic, the [server](./src/server) folder contains the corresponding application code, and the [views](./src/views) folder contains the rendered HTML. The [oauth2](./src/oauth2) folder sans a few lines of user-related code is a normative reference for implementing an [OAuth 2.0 Authorisation Grant](https://datatracker.ietf.org/doc/html/rfc6749#section-4.1) client. This code has four main components: the [install endpoint](./src/oauth2/handle-install.ts), [state manager](./src/oauth2/state-manager.ts), [callback endpoint](./src/oauth2/handle-callback.ts), and [token exchange](./src/oauth2/token-exchange.ts).
 
+### Flowcharts
+
+#### AgriWebb Marketplace to Auth Dialog
+
+```mermaid
+graph LR
+    A[AW Marketplace] -->|enable| B(Sample App Install Endpoint)
+    B --> |Auth Request| C[AW Auth Server]
+    C -->|Redirect| D{AW Auth Dialog}
+```
+
+#### AgriWebb Auth Dialog to Auth Server
+
+```mermaid
+graph LR
+    D{AW Auth Dialog} -->|Allow| E[AW Auth Server]
+    D -->|Cancel| F[AW Auth Server]
+    F -->|Redirect| G[Sample App Authorise Callback - Error]
+    E -->|Redirect| H[Sample App Authorise Callback - Code]
+    H -->|Token Exchange| I{AW Auth Server}
+```
+
+#### AgriWebb Auth Server to Marketplace
+
+```mermaid
+graph LR
+    I{AW Auth Server}
+    I -->|Functional| J[Marketplace Callback]
+    I -->|Non-functional| K[Marketplace Callback]
+    J -->|Redirect| L[AW Marketplace Enabled]
+    K -->|Redirect| M[AW Marketplace Error]
+```
+
+
 ### Install Endpoint
 
 The [install endpoint](./src/oauth2/handle-install.ts) begins the [OAuth 2.0 Authorisation Grant](https://datatracker.ietf.org/doc/html/rfc6749#section-4.1), where the sample app (OAuth 2.0 Client) creates an authorisation request to the AgriWebb auth server (OAuth 2.0 Authorisation Server). The install endpoint redirects the users' browser to the /authorize route with the required parameters appended. Our implementation requires that if you receive a parameter called organization, you must pass it through to the AgriWebb auth server; this prevents the user from having to re-input their organisation.
