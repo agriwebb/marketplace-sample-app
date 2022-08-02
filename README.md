@@ -19,7 +19,7 @@ The AgriWebb Marketplace supports the [OAuth 2.0 Authorisation Grant Flow](https
 
 This sample app is a serverless project built on AWS Lambda and DynamoDB. The app is structured into three main folders, [oauth2](./src/oauth2), [server](./src/server), and [views](./src/views). The [oauth2](./src/oauth2) folder contains all the related authorisation logic, the [server](./src/server) folder contains the corresponding application code, and the [views](./src/views) folder contains the rendered HTML. The [oauth2](./src/oauth2) folder sans a few lines of user-related code is a normative reference for implementing an [OAuth 2.0 Authorisation Grant](https://datatracker.ietf.org/doc/html/rfc6749#section-4.1) client. This code has four main components: the [install endpoint](./src/oauth2/handle-install.ts), [state manager](./src/oauth2/state-manager.ts), [callback endpoint](./src/oauth2/handle-callback.ts), and [token exchange](./src/oauth2/token-exchange.ts).
 
-### Flow Charts
+### Flowcharts
 
 #### AgriWebb Marketplace to Auth Dialog
 
