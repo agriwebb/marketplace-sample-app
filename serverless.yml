@@ -4,6 +4,7 @@ useDotenv: true
 service: agriwebb-marketplace-sample-app
 
 plugins:
+  - serverless-plugin-datadog
   - serverless-esbuild
   - serverless-offline
 
@@ -14,6 +15,8 @@ custom:
     httpPort: 4000
     lambdaPort: 4002
     websocketPort: 4001
+  datadog:
+    apiKeySecretArn: ${ssm:/infrastructure/datadog/datadogSecretArn}
 
 provider:
   name: aws
@@ -60,6 +63,11 @@ provider:
           Resource: !GetAtt
             - RefreshTokenTable
             - Arn
+        # Permission for Datadog
+        - Effect: Allow
+          Action:
+            - secretsmanager:GetSecretValue
+          Resource: ${ssm:/infrastructure/datadog/datadogSecretArn}
 
 package:
   individually: true

@@ -1,0 +1,41 @@
+steps:
+  - label: ':pipeline: :serverless: Playground'
+    branches: '!main'
+    env:
+      STAGE: dev
+      ACCOUNT_ID: '748446198525'
+      DOMAIN_NAME: marketplace-sample-app.playground.agriwebb.io
+    command: ./.buildkite/scripts/deploy.sh
+    agents:
+      queue: 'yarn'
+
+  - label: ':pipeline: :serverless: Staging'
+    branches: 'main'
+    env:
+      STAGE: staging
+      ACCOUNT_ID: '598117122758'
+      DOMAIN_NAME: marketplace-sample-app.staging.agriwebb.io
+    command: ./.buildkite/scripts/deploy.sh
+    agents:
+      queue: 'yarn'
+
+  - block: ':rocket: Deploy to Prod?'
+    branches: 'main'
+    prompt: 'Deploy to Prod?'
+    fields:
+      - select: 'Confirm Prod deployment'
+        key: 'release-confirmation'
+        required: true
+        options:
+          - label: 'Confirmed'
+            value: 'true'
+
+  - label: ':pipeline: :serverless: Prod'
+    branches: 'main'
+    env:
+      STAGE: prod
+      ACCOUNT_ID: '073065580947'
+      DOMAIN_NAME: marketplace-sample-app.agriwebb.io
+    command: ./.buildkite/scripts/deploy.sh
+    agents:
+      queue: 'yarn'

@@ -19,8 +19,10 @@
     "@types/isomorphic-fetch": "^0.0.36",
     "@types/node": "^16.11.39",
     "@types/uuid": "^8.3.4",
+    "esbuild": "^0.14.51",
     "serverless": "^3.19.0",
     "serverless-esbuild": "^1.30.0",
-    "serverless-offline": "^8.8.0"
+    "serverless-offline": "^8.8.0",
+    "serverless-plugin-datadog": "^5.4.0"
   }
 }
