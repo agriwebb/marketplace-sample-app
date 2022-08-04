@@ -160,7 +160,9 @@ resources:
         RestApiId:
           Ref: ApiGatewayRestApi
         Stage: ${sls:stage}
-      DependsOn: DomainName
+      DependsOn:
+        - DomainName
+        - 'ApiGatewayDeployment${sls:instanceId}'
 
     UsersTable:
       Type: AWS::DynamoDB::Table
