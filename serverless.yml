@@ -24,11 +24,18 @@ provider:
   timeout: 30
   region: ap-southeast-2
   environment:
+    OAUTH_SERVER_AUTHORIZE_URL: https://${env:OAUTH_DOMAIN_NAME}/oauth2/authorize
+    OAUTH_SERVER_TOKEN_URL: https://${env:OAUTH_DOMAIN_NAME}/oauth2/token
     USERS_TABLE_NAME: !Ref UsersTable
     INTEGRATION_TABLE_NAME: !Ref IntegrationTable
     ACCESS_TOKEN_TABLE_NAME: !Ref AccessTokenTable
     REFRESH_TOKEN_TABLE_NAME: !Ref RefreshTokenTable
     BASE_URL: https://${env:DOMAIN_NAME}/
+    AGRIWEBB_GRAPHQL_URI: https://${env:API_DOMAIN_NAME}/v2
+    AGRIWEBB_MARKETPLACE_CALLBACK_URI: https://${env:API_DOMAIN_NAME}/v2/marketplace/callback
+    AGRIWEBB_DOCUMENTATION_URI: https://${env:DOCS_DOMAIN_NAME}/
+    AGRIWEBB_MARKETPLACE_HOMEPAGE_URI: https://${env:APP_DOMAIN_NAME}/accounts/marketplace/
+
   iam:
     role:
       name: aw-marketplace-sample-${sls:stage}

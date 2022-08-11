@@ -1,3 +1,11 @@
+import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager'
+import pMemoize from 'p-memoize'
+
+const secrets = new SecretsManagerClient({})
+
+/*
+  Dynamo DB table names.
+*/
 export const USERS_TABLE_NAME = process.env.USERS_TABLE_NAME
 export const INTEGRATION_TABLE_NAME = process.env.INTEGRATION_TABLE_NAME
 export const ACCESS_TOKEN_TABLE_NAME = process.env.ACCESS_TOKEN_TABLE_NAME
@@ -15,21 +23,33 @@ export const BASE_URL = (!IS_DEVELOPMENT && process.env.BASE_URL) || 'http://loc
 
 /*
   This state manager secret is used in the verification of the state parameter.
-  It should be stored in something like AWS Secrets Manager or similar, however,
-  for the portability of this example it is stored here.
 */
-export const STATE_MANAGER_SECRET =
-  'mgCu1leGbPobYiJTWdeZe7uFQ7ZfgxNa-q-5dDeAWMVIOW-z8VAm5amg0phKEQ6oNUi5ynKo6JsxASKpjamkBg'
+export const getStateManagerSecret = pMemoize(
+  (): Promise<string> =>
+    secrets
+      .send(new GetSecretValueCommand({ SecretId: 'marketplace-sample-app/state-manager-secret' }))
+      .then((response) => response.SecretString!)
+)
+
+/*
+  The Documentation URI.
+*/
+export const AGRIWEBB_DOCUMENTATION_URI = process.env.AGRIWEBB_DOCUMENTATION_URI!
+
+/*
+  The Marketplace Homepage URI.
+*/
+export const AGRIWEBB_MARKETPLACE_HOMEPAGE_URI = process.env.AGRIWEBB_MARKETPLACE_HOMEPAGE_URI!
 
 /*
   The Public API v2 URI.
 */
-export const AGRIWEBB_V2_API_URI = 'https://api.staging.agriwebb.com/v2/'
+export const AGRIWEBB_GRAPHQL_URI = process.env.AGRIWEBB_GRAPHQL_URI!
 
 /*
   The Marketplace Callback endpoint.
 */
-export const MARKETPLACE_CALLBACK_URI = 'https://api.staging.agriwebb.com/v2/marketplace/callback'
+export const AGRIWEBB_MARKETPLACE_CALLBACK_URI = process.env.AGRIWEBB_MARKETPLACE_CALLBACK_URI!
 
 /*
   The installation URI provided to the OAuth 2.0 server.

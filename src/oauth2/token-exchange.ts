@@ -14,7 +14,7 @@
 */
 
 import 'isomorphic-fetch'
-import { CLIENT_ID, CLIENT_SECRET, OAUTH_SERVER_TOKEN_URL } from '../configuration-oauth2.js'
+import { getClientId, getClientSecret, OAUTH_SERVER_TOKEN_URL } from '../configuration-oauth2.js'
 import { REDIRECT_URI } from '../configuration-server.js'
 import { logger } from '../logger.js'
 import { setCredentials } from '../server/credentials'
@@ -50,9 +50,10 @@ const callTokenExchange = async (
   const response = await fetch(OAUTH_SERVER_TOKEN_URL, {
     method: 'POST',
     headers: {
-      Authorization: `Basic ${Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`, 'utf-8').toString(
-        'base64'
-      )}`,
+      Authorization: `Basic ${Buffer.from(
+        `${await getClientId()}:${await getClientSecret()}`,
+        'utf-8'
+      ).toString('base64')}`,
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: searchParams.toString(),
@@ -91,7 +92,7 @@ export const exchangeAuthorisationCode = async (
     grant_type: 'authorization_code',
     code,
     redirect_uri: REDIRECT_URI,
-    client_id: CLIENT_ID,
+    client_id: await getClientId(),
   })
 
   await setCredentials(integrationId, credentials)

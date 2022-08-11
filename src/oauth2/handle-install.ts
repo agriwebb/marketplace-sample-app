@@ -11,11 +11,11 @@
   https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.1
 
   For more information about the install endpoint, please see the AgriWebb API
-  Documentation https://docs.staging.agriwebb.io/
+  Documentation https://docs.agriwebb.io/
 */
 
 import { APIGatewayProxyEvent } from 'aws-lambda'
-import { CLIENT_ID, OAUTH_SERVER_AUTHORIZE_URL } from '../configuration-oauth2.js'
+import { getClientId, OAUTH_SERVER_AUTHORIZE_URL } from '../configuration-oauth2.js'
 import { REDIRECT_URI, SCOPE } from '../configuration-server.js'
 import { createHandler } from '../create-handler.js'
 import { logger } from '../logger.js'
@@ -26,11 +26,11 @@ const log = logger('handle-install')
 export const handleInstall = async (
   organization?: string
 ): Promise<{ signature: string; location: string }> => {
-  const { state, signature } = createState()
+  const { state, signature } = await createState()
 
   const url = new URL(OAUTH_SERVER_AUTHORIZE_URL)
   url.searchParams.set('response_type', 'code')
-  url.searchParams.set('client_id', CLIENT_ID)
+  url.searchParams.set('client_id', await getClientId())
   url.searchParams.set('redirect_uri', REDIRECT_URI)
   url.searchParams.set('scope', SCOPE)
   url.searchParams.set('state', state)

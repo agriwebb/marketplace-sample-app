@@ -1,4 +1,3 @@
-import { CLIENT_ID, CLIENT_SECRET } from '../configuration-oauth2.js'
 import { IS_DEVELOPMENT } from '../configuration-server.js'
 import { renderHtml } from './html.js'
 
@@ -47,15 +46,6 @@ export const renderCredentials = (authorisation: string | null, refreshToken: st
       </p>
       <div class="flex flex-col gap-2 my-4 w-full">
         ${refreshTokenButton}
-        <button
-          class="border-2 rounded-md py-1 flex-auto"
-          onclick="navigator.clipboard.writeText('Basic ${Buffer.from(
-            `${CLIENT_ID}:${CLIENT_SECRET}`,
-            'utf-8'
-          ).toString('base64')}')"
-        >
-          Copy Authorisation Basic Header
-        </button>
         ${authorisationButton}
       </div>
     </div>

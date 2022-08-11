@@ -13,9 +13,9 @@ import { APIGatewayProxyEvent, type APIGatewayProxyResult } from 'aws-lambda'
 import { v4 as uuid } from 'uuid'
 import { createHandler } from '../create-handler.js'
 import { logger } from '../logger.js'
+import { reportIntegrationStatus } from '../server/agriwebb-marketplace-callback-api.js'
 import { handleLoginRedirect } from '../server/handle-login.js'
 import { setIntegration } from '../server/integrations.js'
-import { reportIntegrationStatus } from '../server/marketplace-callback.js'
 import { getUserCookie, upsertUser } from '../server/users-manager.js'
 import { OAuth2Error, renderError } from '../views/error.js'
 import { getSignatureCookie, verifyState } from './state-manager.js'
@@ -39,7 +39,7 @@ export const handleCallbackRequest = createHandler(
 
       const state = event.queryStringParameters?.state
       const signature = getSignatureCookie(event.headers.cookie || event.headers.Cookie || '')
-      const isStateValid = state && signature && verifyState(state, signature)
+      const isStateValid = state && signature && (await verifyState(state, signature))
 
       if (!isStateValid) {
         return {
