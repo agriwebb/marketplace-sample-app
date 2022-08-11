@@ -5,7 +5,7 @@ steps:
       STAGE: dev
       ACCOUNT_ID: '748446198525'
       DOMAIN_NAME: marketplace-sample-app.playground.agriwebb.io
-      OAUTH_DOMAIN_NAME: api.playground.agriwebb.com
+      OAUTH_DOMAIN_NAME: auth.playground.agriwebb.com
       API_DOMAIN_NAME: api.playground.agriwebb.com
       DOCS_DOMAIN_NAME: docs.playground.agriwebb.io
       APP_DOMAIN_NAME: portal-staging.agriwebb.com
@@ -19,7 +19,7 @@ steps:
       STAGE: staging
       ACCOUNT_ID: '598117122758'
       DOMAIN_NAME: marketplace-sample-app.staging.agriwebb.io
-      OAUTH_DOMAIN_NAME: api.staging.agriwebb.com
+      OAUTH_DOMAIN_NAME: auth.staging.agriwebb.com
       API_DOMAIN_NAME: api.staging.agriwebb.com
       DOCS_DOMAIN_NAME: docs.staging.agriwebb.io
       APP_DOMAIN_NAME: portal-staging.agriwebb.com
@@ -37,7 +37,7 @@ steps:
       STAGE: prod
       ACCOUNT_ID: '073065580947'
       DOMAIN_NAME: marketplace-sample-app.agriwebb.io
-      OAUTH_DOMAIN_NAME: api.agriwebb.com
+      OAUTH_DOMAIN_NAME: auth.agriwebb.com
       API_DOMAIN_NAME: api.agriwebb.com
       DOCS_DOMAIN_NAME: docs.agriwebb.io
       APP_DOMAIN_NAME: portal.agriwebb.com

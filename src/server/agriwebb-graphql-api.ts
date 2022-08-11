@@ -16,7 +16,15 @@ const graphql = async <T>(integrationId: string, query: string): Promise<T> => {
     throw new Error(`${response.status} ${response.statusText}`)
   }
 
-  return response.json().then((response) => response.data)
+  const json = await response.json()
+
+  if (json.errors?.length) {
+    throw new AggregateError(
+      json.errors.map((error: { message: string }) => new Error(error.message))
+    )
+  }
+
+  return json.data
 }
 
 export const getFarms = async (integrationId: string, farmIds: string[]): Promise<Farm[]> => {
