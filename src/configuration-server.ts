@@ -1,4 +1,5 @@
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager'
+import pMemoize from 'p-memoize'
 
 const secrets = new SecretsManagerClient({})
 
@@ -23,8 +24,11 @@ export const BASE_URL = (!IS_DEVELOPMENT && process.env.BASE_URL) || 'http://loc
 /*
   This state manager secret is used in the verification of the state parameter.
 */
-export const STATE_MANAGER_SECRET = await secrets.send(
-  new GetSecretValueCommand({ SecretId: 'marketplace-sample-app/state-manager-secret' })
+export const getStateManagerSecret = pMemoize(
+  (): Promise<string> =>
+    secrets
+      .send(new GetSecretValueCommand({ SecretId: 'marketplace-sample-app/state-manager-secret' }))
+      .then((response) => response.SecretString!)
 )
 
 /*

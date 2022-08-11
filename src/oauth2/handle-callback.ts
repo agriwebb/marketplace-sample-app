@@ -39,7 +39,7 @@ export const handleCallbackRequest = createHandler(
 
       const state = event.queryStringParameters?.state
       const signature = getSignatureCookie(event.headers.cookie || event.headers.Cookie || '')
-      const isStateValid = state && signature && verifyState(state, signature)
+      const isStateValid = state && signature && (await verifyState(state, signature))
 
       if (!isStateValid) {
         return {
