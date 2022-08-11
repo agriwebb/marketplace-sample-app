@@ -74,7 +74,7 @@ provider:
         - Effect: Allow
           Action:
             - secretsmanager:GetSecretValue
-          Resource: marketplace-sample-app/*
+          Resource: arn:aws:secretsmanager:ap-southeast-2:*:secret:marketplace-sample-app/*
         # Permission for Datadog
         - Effect: Allow
           Action:
