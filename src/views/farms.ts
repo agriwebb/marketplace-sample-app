@@ -1,4 +1,4 @@
-import { Farm } from '../server/agriwebb-v2-api.js'
+import { Farm } from '../server/agriwebb-graphql-api.js'
 import { renderHtml } from './html.js'
 
 interface RenderFarmsOptions {

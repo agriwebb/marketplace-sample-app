@@ -1,4 +1,4 @@
-import { MARKETPLACE_CALLBACK_URI } from '../configuration-server.js'
+import { AGRIWEBB_MARKETPLACE_CALLBACK_URI } from '../configuration-server.js'
 import { logger } from '../logger.js'
 import { fetchWithCredentialRefresh } from './fetch.js'
 
@@ -43,13 +43,17 @@ const callMarketplaceCallback = async <
 ): Promise<MarketplaceCallbackResult<T['type']>> => {
   log('call marketplace callback: "%s" %O', integrationId, options)
 
-  const response = await fetchWithCredentialRefresh(integrationId, MARKETPLACE_CALLBACK_URI, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-    },
-    body: JSON.stringify(options),
-  })
+  const response = await fetchWithCredentialRefresh(
+    integrationId,
+    AGRIWEBB_MARKETPLACE_CALLBACK_URI,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+      body: JSON.stringify(options),
+    }
+  )
 
   if (!response.ok) {
     throw new Error(`Marketplace callback failed: ${response.status}`)

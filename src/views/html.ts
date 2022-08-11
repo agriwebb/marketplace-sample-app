@@ -1,4 +1,10 @@
-import { CREDENTIALS_URI, FARM_LIST_URI, HOME_URI, LOGOUT_URI } from '../configuration-server.js'
+import {
+  AGRIWEBB_DOCUMENTATION_URI,
+  CREDENTIALS_URI,
+  FARM_LIST_URI,
+  HOME_URI,
+  LOGOUT_URI,
+} from '../configuration-server.js'
 
 export const renderHtml = (template: string) => {
   return `
@@ -46,7 +52,7 @@ export const renderHtml = (template: string) => {
         ${template}
         <footer class="absolute border-t flex flex-row p-4 bottom-0 w-full justify-center">
           <span>
-            <a class="underline" href="https://docs.staging.agriwebb.io/">AgriWebb API Documentation</a>
+            <a class="underline" href="${AGRIWEBB_DOCUMENTATION_URI}">AgriWebb API Documentation</a>
           </span>
         </footer>
       </body>
