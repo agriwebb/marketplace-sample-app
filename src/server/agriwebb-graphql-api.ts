@@ -18,9 +18,12 @@ const graphql = async <T>(integrationId: string, query: string): Promise<T> => {
 
   const json = await response.json()
 
-  if (json.errors?.length) {
+  if (json.errors?.length === 1) {
+    throw new Error(json.errors[0].message)
+  } else if (json.errors?.length > 1) {
     throw new AggregateError(
-      json.errors.map((error: { message: string }) => new Error(error.message))
+      json.errors.map((error: { message: string }) => new Error(error.message)),
+      json.errors.map((error: { message: string }) => error.message).join(', ')
     )
   }
 
