@@ -22,13 +22,6 @@ steps:
   - block: ':rocket: Deploy to Prod?'
     branches: 'main'
     prompt: 'Deploy to Prod?'
-    fields:
-      - select: 'Confirm Prod deployment'
-        key: 'release-confirmation'
-        required: true
-        options:
-          - label: 'Confirmed'
-            value: 'true'
 
   - label: ':pipeline: :serverless: Prod'
     branches: 'main'
