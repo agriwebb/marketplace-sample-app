@@ -71,6 +71,10 @@ provider:
           Resource: !GetAtt
             - RefreshTokenTable
             - Arn
+        - Effect: Allow
+          Action:
+            - secretsmanager:GetSecretValue
+          Resource: marketplace-sample-app/*
         # Permission for Datadog
         - Effect: Allow
           Action:
