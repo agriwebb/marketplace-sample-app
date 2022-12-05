@@ -29,12 +29,6 @@ export const handleCallbackRequest = createHandler(
     event: Pick<APIGatewayProxyEvent, 'path' | 'queryStringParameters' | 'headers'>
   ): Promise<APIGatewayProxyResult> => {
     try {
-      const username = getUserCookie(event.headers.cookie || event.headers.Cookie || '')
-
-      if (!username) {
-        return handleLoginRedirect(event)
-      }
-
       const integrationId = uuid()
 
       const state = event.queryStringParameters?.state
@@ -52,6 +46,12 @@ export const handleCallbackRequest = createHandler(
       }
 
       if (event.queryStringParameters?.code) {
+        const username = getUserCookie(event.headers.cookie || event.headers.Cookie || '')
+
+        if (!username) {
+          return handleLoginRedirect(event)
+        }
+
         await exchangeAuthorisationCode(integrationId, event.queryStringParameters.code)
         await upsertUser(username, integrationId)
         const { redirectURL, allowedFarmIds } = await reportIntegrationStatus(
