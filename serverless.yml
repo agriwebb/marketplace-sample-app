@@ -35,6 +35,7 @@ provider:
     AGRIWEBB_MARKETPLACE_CALLBACK_URI: https://${env:API_DOMAIN_NAME}/v2/marketplace/callback
     AGRIWEBB_DOCUMENTATION_URI: https://${env:DOCS_DOMAIN_NAME}/
     AGRIWEBB_MARKETPLACE_HOMEPAGE_URI: https://${env:APP_DOMAIN_NAME}/accounts/marketplace/
+    STAGE: ${sls:stage}
 
   iam:
     role:
