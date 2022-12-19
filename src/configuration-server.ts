@@ -17,6 +17,11 @@ export const REFRESH_TOKEN_TABLE_NAME = process.env.REFRESH_TOKEN_TABLE_NAME
 export const IS_DEVELOPMENT = process.env.IS_OFFLINE === 'true'
 
 /*
+  Determine if the server is running in production mode.
+*/
+export const IS_PRODUCTION = process.env.STAGE === 'prod'
+
+/*
   The base url the application is deployed at.
 */
 export const BASE_URL = (!IS_DEVELOPMENT && process.env.BASE_URL) || 'http://localhost:4000/dev/'

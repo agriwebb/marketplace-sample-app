@@ -21,7 +21,12 @@
 import base64url from 'base64url'
 import cookie, { CookieSerializeOptions } from 'cookie'
 import { createHmac, randomBytes } from 'crypto'
-import { getStateManagerSecret, REDIRECT_URI } from '../configuration-server.js'
+import {
+  getStateManagerSecret,
+  IS_DEVELOPMENT,
+  IS_PRODUCTION,
+  REDIRECT_URI,
+} from '../configuration-server.js'
 import { logger } from '../logger.js'
 
 const log = logger('state-manager')
@@ -31,8 +36,8 @@ export const setSignatureCookie = (signature: string) => {
     httpOnly: true,
     maxAge: 300,
     path: new URL(REDIRECT_URI).pathname,
-    secure: true,
-    sameSite: 'lax',
+    secure: IS_DEVELOPMENT ? false : true,
+    sameSite: IS_PRODUCTION ? 'lax' : 'none',
   }
 
   log('cookie options: %O', cookieOptions)
