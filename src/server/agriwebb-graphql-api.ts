@@ -9,6 +9,9 @@ export interface Farm {
 const graphql = async <T>(integrationId: string, query: string): Promise<T> => {
   const response = await fetchWithCredentialRefresh(integrationId, AGRIWEBB_GRAPHQL_URI, {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+    },
     body: JSON.stringify({ query }),
   })
 
